@@ -1,6 +1,6 @@
-# theokit-backend-dx
+# theokit-di
 
-Backend developer-experience packages for the Theo ecosystem, extracted from `theokit-sdk` (2026-06-18, plan `monorepo-cohesion-split`) so the SDK stays a cohesive Agent-AI **Harness** and these generic backend-DX concerns evolve on their own cadence.
+The dependency-injection ecosystem for the Theo platform — a NestJS-flavoured IoC container, agent-aware DI, and a DI-driven ORM. Extracted from `theokit-sdk` (2026-06-18, plan `monorepo-cohesion-split`) so the SDK stays a cohesive Agent-AI **Harness** and these DI/IoC concerns evolve on their own cadence.
 
 ## Packages
 
