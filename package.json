@@ -1,5 +1,5 @@
 {
-  "name": "theokit-backend-dx-monorepo",
+  "name": "theokit-di-monorepo",
   "private": true,
   "type": "module",
   "engines": {

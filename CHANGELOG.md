@@ -1,6 +1,6 @@
 # Changelog
 
-Workspace-level changes for the `theokit-backend-dx` monorepo. Per-package changes live in each package's `CHANGELOG.md`.
+Workspace-level changes for the `theokit-di` monorepo. Per-package changes live in each package's `CHANGELOG.md`.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
