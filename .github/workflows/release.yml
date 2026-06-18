@@ -1,6 +1,6 @@
 name: Release
 
-# theokit-backend-dx: di + di-agent + orm. Changesets-driven per-package
+# theokit-di: di + di-agent + orm. Changesets-driven per-package
 # release. Auth via NPM_TOKEN (NODE_AUTH_TOKEN). Provenance disabled while
 # the source repo is private (npm E422 on private repos) — re-enable when public.
 
@@ -13,7 +13,7 @@ concurrency: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   release:
-    name: Release via Changesets (backend-dx)
+    name: Release via Changesets (theokit-di)
     runs-on: ubuntu-latest
     permissions:
       contents: write
