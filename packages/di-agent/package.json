@@ -56,12 +56,13 @@
   "devDependencies": {
     "@swc/core": "^1.15.40",
     "@theokit/di": "workspace:*",
-    "@theokit/sdk": "workspace:*",
+    "@theokit/sdk": "^1.9.0",
     "reflect-metadata": "^0.2.0",
     "tsup": "^8.5.0",
     "typescript": "^5.8.0",
     "unplugin-swc": "^1.5.9",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.8",
+    "zod": "^4.0.0"
   },
   "publishConfig": {
     "access": "public"
