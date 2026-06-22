@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0] - 2026-06-22
+
+### Added
+
+- **M7-7 — `createRepository(db, table)` non-DI factory.** Plain CRUD needs no `@theokit/di`, decorators, or `reflect-metadata` (only `@Transactional` requires a bound DataSource). Works with any drizzle `db`, including better-sqlite3 (awaitable builders). First stable release (drops the `-next` prerelease tag).
+
 ## [0.1.0-next.1] - 2026-06-01
 
 ### Added
