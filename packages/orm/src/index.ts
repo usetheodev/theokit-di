@@ -10,7 +10,7 @@ export {
 } from "./errors.js";
 export { InjectRepository } from "./inject-repository.js";
 export { OrmModule } from "./module.js";
-export { Repository } from "./repository.js";
+export { createRepository, Repository } from "./repository.js";
 export { getRepositoryToken } from "./tokens.js";
 export { Transactional } from "./transactional.js";
 export type {
