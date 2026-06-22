@@ -169,3 +169,17 @@ export class Repository<T extends Table> {
     return this.pkName;
   }
 }
+
+/**
+ * M7-7 — non-DI factory for {@link Repository}. The `Repository` constructor is
+ * already DI-free (`new Repository(db, table)`); this factory makes the non-DI
+ * path explicit and discoverable, so consumers do NOT need `@theokit/di`,
+ * decorators, or `reflect-metadata` for plain CRUD — only `@Transactional`
+ * requires a bound DataSource. Works with any drizzle `db` (incl. better-sqlite3,
+ * whose query builders are awaitable).
+ *
+ * @public
+ */
+export function createRepository<T extends Table>(db: unknown, table: T): Repository<T> {
+  return new Repository(db, table);
+}
