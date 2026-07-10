@@ -39,7 +39,8 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests",
-    "test:coverage": "vitest run --coverage --passWithNoTests"
+    "test:coverage": "vitest run --coverage --passWithNoTests",
+    "docs:json": "typedoc --options typedoc.json"
   },
   "keywords": [
     "dependency-injection",
@@ -60,6 +61,7 @@
     "@vitest/coverage-v8": "^4.1.8",
     "reflect-metadata": "^0.2.0",
     "tsup": "^8.5.0",
+    "typedoc": "^0.28.19",
     "typescript": "^5.8.0",
     "unplugin-swc": "^1.5.9",
     "vitest": "^4.1.8"
