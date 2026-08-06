@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Wiki de conhecimento em `wiki/` — bundle Open Knowledge Format v0.2 com 27 conceitos
+  derivados do código-fonte dos três pacotes: pacotes, superfície de API, arquitetura,
+  guias, glossário e três *caveats* de divergência entre código e documentação.
+  Validado com `okf-validate --strict` (0 erros, 0 warnings, 0 links quebrados,
+  0 órfãos). (#4, #5, #6)
 - TypeDoc `docs:json` tooling per package (`@theokit/di`, `@theokit/di-agent`, `@theokit/orm`): each package now has a `typedoc.json` (single `src/index.ts` entrypoint, `docs-json/api.json` output) and a `docs:json` script, plus `typedoc` as a devDependency. Emits the TypeDoc JSON consumed by the `theo-opendocs` `generate:di-reference` script to build the per-symbol API reference. `docs-json/` is gitignored (generated artifact).
 
 ### Changed
