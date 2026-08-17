@@ -29,3 +29,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - npm provenance on all three packages, so a published tarball can be traced back
   to the commit and workflow that produced it. This needs a public source
   repository, which is why it is on now and was not before.
+
+### Changed
+
+- **The repository moved to the official `usetheokit` organization.** Existing clones keep
+  working: GitHub redirects the old `usetheodev/theokit-di` remote permanently. The
+  `repository`, `bugs` and `homepage` fields of all three packages, plus the links in
+  `SECURITY.md`, now point at `usetheokit`. (usetheokit/theokit#316)
+
+- **The Apache-2.0 license text was replaced with the official one.** The text shipped
+  until now had paragraph 4(d) truncated, dropping "reasonable and customary use" from
+  the NOTICE clause. A modified body under the `Apache-2.0` SPDX identifier is
+  effectively a custom license. The root LICENSE and the three package LICENSEs are now
+  byte-identical to the canonical text. (usetheokit/theokit#316)
