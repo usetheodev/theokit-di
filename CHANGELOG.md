@@ -14,6 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Secret scanning, in two layers: a `pre-commit` hook that scans the staged content
+  with TruffleHog and refuses the commit, and a workflow that re-scans the pushed
+  range in CI. The hook is what keeps a credential out of the history at all; the
+  workflow is what `git commit --no-verify` cannot skip. Confirmed fixtures are
+  silenced one line at a time with a `trufflehog:ignore` comment, never by excluding
+  a path — an excluded path would also hide a real secret added to that fixture later.
 - `LICENSE` at the repository root, Apache-2.0, the same text the three packages
   ship. Without it, default copyright applied to everything outside `packages/`.
 - `SECURITY.md` — how to report a vulnerability privately, what is in scope, and

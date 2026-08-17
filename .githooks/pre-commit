@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Git pre-commit hook.
+#
+#   GATE 1. Secret scanning — TruffleHog over the staged content.
+#
+# Lint, typecheck and tests are deliberately not run here. They are cheap in CI and a
+# slow pre-commit is a pre-commit people learn to bypass with --no-verify, which costs
+# more than it saves. Secret scanning is the exception that earns its place locally:
+# CI can only catch a credential after it is already written to the history, and from
+# that moment the only real remedy is rotating it at the provider. This hook is the
+# last point where a leak is still free to fix.
+
+set -e
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+"$ROOT/.githooks/secret-scan.sh"
