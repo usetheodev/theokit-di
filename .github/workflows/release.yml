@@ -1,8 +1,8 @@
 name: Release
 
 # theokit-di: di + di-agent + orm. Changesets-driven per-package
-# release. Auth via NPM_TOKEN (NODE_AUTH_TOKEN). Provenance disabled while
-# the source repo is private (npm E422 on private repos) — re-enable when public.
+# release. Auth via NPM_TOKEN (NODE_AUTH_TOKEN). Provenance is enabled: npm only
+# attests packages built from a public source repository, which this now is.
 
 on:
   push:
@@ -41,3 +41,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

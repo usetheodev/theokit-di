@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- npm provenance is enabled again. It was switched off because npm refuses attestation for packages built from a private source repository; this one is public now, so published tarballs carry a sigstore attestation linking them to the commit and workflow that produced them.
 - `bindDataSourceToInstance` and `TransactionalOptions` are exported from the package entry point. `bindDataSourceToInstance` is what the `@Transactional` error message tells you to call, and it was not reachable from the published package, so following that instruction did not compile (#4).
 
 ### Changed
