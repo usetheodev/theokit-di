@@ -21,6 +21,6 @@ export default defineConfig({
     environment: "node",
     include: ["tests/**/*.test.ts"],
     setupFiles: ["./vitest.setup.ts"],
-    testTimeout: 240_000, // T4.2 real-LLM integration test budget
+    testTimeout: 240_000, // budget for the real-LLM integration test
   },
 });
