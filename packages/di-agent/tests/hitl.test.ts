@@ -3,6 +3,11 @@ import { describe, expect, it } from "vitest";
 
 import { Hitl, readHitlMetadata } from "../src/decorators/hitl.js";
 
+/**
+ * `readHitlMetadata` returns a Map keyed by method. The multi-method contract that
+ * shape exists for is covered in `cron-hitl-multi-method.test.ts`; this file covers a
+ * single decorated method.
+ */
 describe("@Hitl", () => {
   it("stores tools list and method key", () => {
     class MyAgent {
@@ -11,7 +16,7 @@ describe("@Hitl", () => {
         return true;
       }
     }
-    const meta = readHitlMetadata(MyAgent);
+    const meta = readHitlMetadata(MyAgent).get("approve");
     expect(meta?.tools).toEqual(["execute"]);
     expect(meta?.methodKey).toBe("approve");
   });
@@ -23,7 +28,7 @@ describe("@Hitl", () => {
         return false;
       }
     }
-    expect(readHitlMetadata(A)?.timeoutMs).toBe(60_000);
+    expect(readHitlMetadata(A).get("check")?.timeoutMs).toBe(60_000);
   });
 
   it("defaults timeoutMs to undefined", () => {
@@ -33,7 +38,7 @@ describe("@Hitl", () => {
         return true;
       }
     }
-    expect(readHitlMetadata(A)?.timeoutMs).toBeUndefined();
+    expect(readHitlMetadata(A).get("approve")?.timeoutMs).toBeUndefined();
   });
 
   it("supports multiple tools", () => {
@@ -43,29 +48,12 @@ describe("@Hitl", () => {
         return true;
       }
     }
-    expect(readHitlMetadata(A)?.tools).toHaveLength(3);
+    expect(readHitlMetadata(A).get("approve")?.tools).toHaveLength(3);
   });
 
-  it("returns undefined for undecorated class", () => {
+  it("returns an empty map for undecorated class", () => {
     class Plain {}
-    expect(readHitlMetadata(Plain)).toBeUndefined();
-  });
-
-  it("last @Hitl wins (one per class)", () => {
-    class A {
-      @Hitl({ tools: ["first"] })
-      async first(): Promise<boolean> {
-        return true;
-      }
-
-      @Hitl({ tools: ["second"] })
-      async second(): Promise<boolean> {
-        return false;
-      }
-    }
-    const meta = readHitlMetadata(A);
-    expect(meta?.tools).toEqual(["second"]);
-    expect(meta?.methodKey).toBe("second");
+    expect(readHitlMetadata(Plain).size).toBe(0);
   });
 
   it("isolates metadata between classes", () => {
@@ -81,8 +69,8 @@ describe("@Hitl", () => {
         return true;
       }
     }
-    expect(readHitlMetadata(A)?.tools).toEqual(["a"]);
-    expect(readHitlMetadata(B)?.tools).toEqual(["b"]);
+    expect(readHitlMetadata(A).get("approve")?.tools).toEqual(["a"]);
+    expect(readHitlMetadata(B).get("approve")?.tools).toEqual(["b"]);
   });
 
   it("works on sync method", () => {
@@ -92,12 +80,12 @@ describe("@Hitl", () => {
         return true;
       }
     }
-    const meta = readHitlMetadata(A);
+    const meta = readHitlMetadata(A).get("approveSync");
     expect(meta?.methodKey).toBe("approveSync");
     expect(meta?.tools).toEqual(["exec"]);
   });
 
-  it("preserves method key as symbol", () => {
+  it("preserves a symbol method key", () => {
     const sym = Symbol("approve");
     class A {
       @Hitl({ tools: ["exec"] })
@@ -105,6 +93,6 @@ describe("@Hitl", () => {
         return true;
       }
     }
-    expect(readHitlMetadata(A)?.methodKey).toBe(sym);
+    expect(readHitlMetadata(A).get(sym)?.methodKey).toBe(sym);
   });
 });

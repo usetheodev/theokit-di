@@ -1,7 +1,7 @@
 ---
 type: Caveat
 title: Inert container decorators
-description: "@Primary, @Qualifier, @PostConstruct and @PreDestroy are exported and documented, but the container never reads their metadata."
+description: "@Primary and @Qualifier are exported but the container never reads them. @PostConstruct and @PreDestroy used to be inert too, and are now implemented."
 resource: packages/di/src/decorators
 tags: [caveat, di, decorators, doc-drift]
 generated: { by: claude-code/claude-opus-5, at: 2026-08-06T15:00:00Z }
@@ -16,106 +16,65 @@ sources:
     resource: packages/di/src/internal/metadata.ts
     title: Metadata keys and readers
   - id: tests
-    resource: packages/di/tests/lifecycle.test.ts
-    title: Lifecycle decorator test suite
+    resource: packages/di/tests/lifecycle-hooks.test.ts
+    title: Lifecycle hook behaviour suite
   - id: grep
-    resource: "grep for PRIMARY / QUALIFIER_NAMES / POST_CONSTRUCT / PRE_DESTROY across packages/di/src at commit 30d39c8"
+    resource: "grep for PRIMARY / QUALIFIER_NAMES across packages/di/src"
     title: Metadata key usage sweep
 ---
 
-Four decorators exported by [@theokit/di](/packages/theokit-di.md) write metadata that
-nothing reads. Applying them is a no-op at runtime.
+Two decorators exported by [@theokit/di](/packages/theokit-di.md) write metadata that
+nothing in the package reads. Applying them changes nothing at runtime.
 
-| Decorator | Metadata key | Written by | Read by |
-|---|---|---|---|
-| `@Primary` | `PRIMARY` | `decorators/primary.ts` | nothing |
-| `@Qualifier(name)` | `QUALIFIER_NAMES` | `decorators/qualifier.ts` | nothing |
-| `@PostConstruct` | `POST_CONSTRUCT` | `decorators/lifecycle.ts` | nothing |
-| `@PreDestroy` | `PRE_DESTROY` | `decorators/lifecycle.ts` | nothing |
+| Decorator | Metadata key | Read by the container |
+|---|---|---|
+| `@Primary` | `PRIMARY` | no |
+| `@Qualifier(name)` | `QUALIFIER_NAMES` | no |
+| `@PostConstruct` | `POST_CONSTRUCT` | **yes** |
+| `@PreDestroy` | `PRE_DESTROY` | **yes** |
 
-# The evidence
+# What changed
 
-A sweep for those four key names across `packages/di/src` at commit `30d39c8` returns
-exactly two kinds of hit: the declaration in `internal/metadata.ts`, and the
-`defineMetadata` call in each decorator. There is no `getMetadata` for any of
-them.[^grep]
+All four were inert when this bundle was first written, and each one's JSDoc described
+behaviour that did not happen — the defect tracked as
+[usetheodev/theokit-di#5](https://github.com/usetheodev/theokit-di/issues/5).
 
-`container.ts` confirms it from the other side. It imports six readers from
-`internal/metadata.ts` — `hasReflectMetadata`, `isInjectable`, `isPrimitiveTypeMarker`,
-`readInjectableMetadata`, `readInjectTokens` and `readOptionalFlags` — and
-`internal/metadata.ts` exports no reader for the four keys above.[^container][^metadata]
+`@PostConstruct` and `@PreDestroy` are now implemented. The container calls the hook
+after construction with every dependency injected, and calls the teardown hook before
+`dispose()`. Their behaviour is described in [lifecycle hooks](/api/di-decorators.md)
+and covered by tests that build a container and observe the effect, rather than reading
+the metadata key back.[^tests]
 
-# What the docstrings claim
+`@Primary` and `@Qualifier` were not implemented. Their docstrings were rewritten to say
+so plainly instead of promising a resolution rule that does not exist.[^metadata]
 
-Each decorator's JSDoc describes behaviour that does not happen:[^metadata]
+# Why those two were left alone
 
-`@PostConstruct`
-: "method called after DI resolution completes... if the method returns a Promise, the
-  Container awaits it before returning the instance." The container never calls the
-  method.
+Both describe choosing between competing implementations of one token. `Container` holds
+exactly one registration per token — `registrations` is a `Map<Token, Registration>` —
+so there is nothing for a qualifier to choose between, and nothing for `@Primary` to win
+against. Registering a second provider for a token replaces the first and warns on
+stderr, regardless of either mark.[^container]
 
-`@PreDestroy`
-: "Called during container.dispose(). Called BEFORE Disposable.dispose()." Disposal only
-  looks for `dispose()` and `Symbol.asyncDispose`; it never consults this key.
-
-`@Primary`
-: "Resolution priority: @Qualifier > @Primary > error." No such priority exists —
-  re-registering a token is last-write-wins with a stderr warning.
-
-`@Qualifier`
-: "narrows the selection to the provider registered with that qualifier name." The
-  container has no notion of a qualified registration.
-
-# What the tests cover
-
-`lifecycle.test.ts` and `qualifier-primary.test.ts` are green, and they are green
-honestly: every assertion reads the metadata key back and checks the stored
-value.[^tests]
-
-```typescript
-@PostConstruct
-init() {}
-// ...
-expect(Reflect.getMetadata(METADATA_KEYS.POST_CONSTRUCT, Service)).toBe("init");
-```
-
-No test constructs a container, resolves a decorated class and observes an
-initialization call — because there is nothing to observe. The suites assert the
-metadata contract, which is the only contract these decorators currently have. This is
-recorded in [test inventory](/architecture/testing.md).
+Supporting several registrations per token is not a missing branch. The token is the
+cache key in `singletonCache` and in the per-request cache, it is the node identity in
+cycle detection and in `analyze()`, and it orders disposal. Making it non-unique changes
+all of those. That is a design decision, and it has not been made.
 
 # What to do instead
 
-`@PostConstruct` → asynchronous initialization
-: Use an async [`FactoryProvider`](/api/providers.md) that awaits its own setup before
-  returning the instance, and resolve with `resolveAsync`.
-
-`@PreDestroy` → cleanup
-: Implement `dispose()` or `Symbol.asyncDispose` on the class. That is the interface
-  [`Container.dispose`](/api/container.md) actually walks, in reverse construction
-  order.
-
 `@Primary` / `@Qualifier` → multiple implementations of one interface
 : Register each under a distinct string token and select with
-  [`@Inject("token")`](/api/di-decorators.md). Explicit, and it works today.
+  [`@Inject("token")`](/api/di-decorators.md), or choose the implementation in the
+  provider list where the choice is visible. Explicit, and it works today.
 
-# Tracked as
-
-Filed as [usetheodev/theokit-di#5](https://github.com/usetheodev/theokit-di/issues/5).
-
-# Status
-
-The metadata keys are exported from
-[`METADATA_KEYS`](/api/metadata-keys.md), so an external consumer *could* read them and
-implement the semantics itself — the decorators are a usable annotation vocabulary even
-while the container ignores them.
-
-Nothing in the repository states whether these are planned features or abandoned ones.
-Treat the docstrings as design intent, not as a description of shipped behaviour, until
-that is decided.
+The metadata keys are exported from [`METADATA_KEYS`](/api/metadata-keys.md), so a
+consumer that wants qualified resolution can read the marks and implement the semantics
+itself. The decorators remain a usable annotation vocabulary — they are simply not a
+resolution rule this container enforces.[^barrel]
 
 [^barrel]: Public barrel of `@theokit/di`
 [^container]: Container implementation
 [^metadata]: Metadata keys and readers
-[^tests]: Lifecycle decorator test suite
+[^tests]: Lifecycle hook behaviour suite
 [^grep]: Metadata key usage sweep

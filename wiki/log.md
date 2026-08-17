@@ -39,3 +39,11 @@
   shipped to consumers through the published type declarations. They were all removed,
   with the reasoning each stood for written out where it applies. This bundle no longer
   cites them either. Some survive in released changelog entries, which are immutable.
+* **Update**: The three caveats were re-derived after the defects they recorded were
+  fixed. `@PostConstruct` and `@PreDestroy` are implemented, so the inert-decorator
+  caveat now covers only `@Primary` and `@Qualifier`, whose docstrings were rewritten to
+  state the limitation instead of promising a resolution rule. `bindDataSourceToInstance`
+  is exported and `@Transactional` has a working container recipe, so that caveat is now
+  about explicit binding rather than a missing path. `@Cron` and `@Hitl` accumulate per
+  method, which changes their reader shape from a single object to a `ReadonlyMap`.
+  Issues #4, #5 and #6 closed.

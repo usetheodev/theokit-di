@@ -90,17 +90,20 @@ omitted; it mirrors the SDK's `createSquad` factory.[^decorators]
 | Decorator | Options | Reader | Shape |
 |---|---|---|---|
 | `@Step` | `after?`, `name?` | `readStepMetadata` | `Map` per class |
-| `@Hitl` | `tools`, `timeoutMs?` | `readHitlMetadata` | single object |
-| `@Cron` | `schedule`, `timezone?` | `readCronMetadata` | single object |
+| `@Hitl` | `tools`, `timeoutMs?` | `readHitlMetadata` | `Map` per class |
+| `@Cron` | `schedule`, `timezone?` | `readCronMetadata` | `Map` per class |
 
-`@Hitl` and `@Cron` store one object per class, not a map, and each folds the decorated
-method name into the metadata as `methodKey`. The consequence is worth stating plainly:
-decorating two methods of the same class with `@Cron` keeps only the last one, because
-the second `defineMetadata` overwrites the first.[^decorators]
+All three accumulate per method, keyed by the method name, and each folds that name into
+the metadata as `methodKey` as well. A class may therefore declare as many scheduled
+routines or approval handlers as it has methods.[^decorators]
 
-`@Step` is the exception that accumulates, since a workflow is a set of steps by
-definition. It is the one decorator with a working consumer —
-[`buildWorkflow`](/api/workflow-builder.md) compiles the map into an SDK Workflow.
+That was not always true. `@Hitl` and `@Cron` used to keep a single object per class, so
+decorating a second method silently discarded the first — the defect recorded in
+[metadata-only agent decorators](/caveats/metadata-only-agent-decorators.md) and fixed in
+[usetheodev/theokit-di#6](https://github.com/usetheodev/theokit-di/issues/6).
+
+`@Step` is the one method decorator with a working consumer here —
+[`buildWorkflow`](/api/workflow-builder.md) compiles its map into an SDK Workflow.
 
 # Reader defaults
 

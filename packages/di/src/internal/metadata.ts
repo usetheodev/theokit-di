@@ -31,7 +31,7 @@ export const METADATA_KEYS = {
   SQUAD: "usetheo:di:squad",
   /** Map<string|symbol, StepMetadata> from `@Step()` method decorator. */
   STEP: "usetheo:di:step",
-  /** HitlOptions from `@Hitl()` method decorator. */
+  /** Map<string|symbol, HitlMetadata> from `@Hitl()` method decorator. */
   HITL: "usetheo:di:hitl",
   /** AutoSummarizeConfig from `@AutoSummarize()` class decorator. */
   AUTO_SUMMARIZE: "usetheo:di:auto-summarize",
@@ -41,7 +41,7 @@ export const METADATA_KEYS = {
   WORKFLOW: "usetheo:di:workflow",
   /** EvalOptions from `@Eval()` class decorator. */
   EVAL: "usetheo:di:eval",
-  /** CronMetadata from `@Cron()` method decorator. */
+  /** Map<string|symbol, CronMetadata> from `@Cron()` method decorator. */
   CRON: "usetheo:di:cron",
   /** Map<string|symbol, SubscriptionOptions> from `@Subscription()` property decorator. */
   SUBSCRIPTION: "usetheo:di:subscription",
@@ -123,6 +123,29 @@ export function readInjectableMetadata(target: ClassConstructor): InjectableMeta
  */
 export function isInjectable(target: ClassConstructor): boolean {
   return readInjectableMetadata(target) !== undefined;
+}
+
+/**
+ * Read the method name `@PostConstruct` marked, if any.
+ *
+ * The decorator writes to `target.constructor`, so a subclass inherits its base
+ * class's hook through the prototype chain — which is what `Reflect.getMetadata`
+ * does by default, and what a consumer extending a decorated base expects.
+ */
+export function readPostConstruct(target: ClassConstructor): string | symbol | undefined {
+  return readLifecycleHook(target, METADATA_KEYS.POST_CONSTRUCT);
+}
+
+/** Read the method name `@PreDestroy` marked, if any. */
+export function readPreDestroy(target: ClassConstructor): string | symbol | undefined {
+  return readLifecycleHook(target, METADATA_KEYS.PRE_DESTROY);
+}
+
+function readLifecycleHook(target: ClassConstructor, key: string): string | symbol | undefined {
+  if (!hasReflectMetadata()) return undefined;
+  const out = Reflect.getMetadata(key, target) as unknown;
+  if (typeof out === "string" || typeof out === "symbol") return out;
+  return undefined;
 }
 
 /**

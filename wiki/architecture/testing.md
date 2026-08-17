@@ -108,14 +108,17 @@ and real SQL rather than a mock query builder.
 guard reachability from the published entry point. A symbol can work perfectly and
 still be unusable if the barrel does not export it.
 
-# The gap that test names off
+# The gap these tests once left
 
-Every `@Transactional` test binds its data source by calling
-`bindDataSourceToInstance` directly. None resolves the decorated class through a
-container, and `module-end-to-end` never mentions `@Transactional`.[^ormtests] The
-documented DI path is therefore not covered — because, as
-[@Transactional has no DI binding path](/caveats/transactional-di-binding.md) sets out,
-it does not exist.
+Every `@Transactional` test used to bind its data source by calling
+`bindDataSourceToInstance` directly, reaching into `src/transactional.js` rather than
+the package barrel. None resolved the decorated class through a container, and
+`module-end-to-end` never mentions `@Transactional`.[^ormtests] So the suite stayed
+green while the public surface was unusable: the symbol those tests imported was not
+exported, and the container path they skipped did not exist.
+
+`transactional-di` closes both. It imports only through the barrels, resolves the
+decorated class from a container, and asserts the binding recipe end to end.
 
 This is the clearest illustration of why a green suite is not the same as a covered
 contract: the tests assert what the code does, and the documentation claims something

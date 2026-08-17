@@ -69,6 +69,29 @@ export class AsyncProviderInSyncResolveError extends Error {
 }
 
 /**
+ * Thrown when a class resolved through sync `resolve()` declares an async
+ * `@PostConstruct` hook.
+ *
+ * The synchronous path cannot await it, and returning an instance whose
+ * initialiser is still running would hand the caller something that looks ready
+ * and is not — a failure that surfaces later, somewhere else. Failing here names
+ * the class and the method instead.
+ */
+export class AsyncPostConstructInSyncResolveError extends Error {
+  override readonly name = "AsyncPostConstructInSyncResolveError" as const;
+  constructor(
+    public readonly className: string,
+    public readonly methodName: string,
+  ) {
+    super(
+      `@PostConstruct ${className}.${methodName}() returned a Promise, and ` +
+        `container.resolve() cannot await it. Use container.resolveAsync() instead, ` +
+        `or make ${methodName}() synchronous.`,
+    );
+  }
+}
+
+/**
  * Thrown when a REQUEST-scoped provider is resolved outside of
  * `container.runInRequest()`.
  */
