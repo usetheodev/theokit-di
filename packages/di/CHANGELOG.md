@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- npm provenance is enabled again. It was switched off because npm refuses attestation for packages built from a private source repository; this one is public now, so published tarballs carry a sigstore attestation linking them to the commit and workflow that produced them.
 - `@PostConstruct` is now called. The container invokes the marked method once the instance is built and every constructor dependency is injected — once per instance, so a SINGLETON initialises once however often it is resolved. An async hook is awaited by `resolveAsync`; `resolve()` cannot await one and throws `AsyncPostConstructInSyncResolveError` rather than return an object whose initialiser is still running (#5).
 - `@PreDestroy` is now called, before `dispose()` when a class has both, and awaited if it returns a Promise. A class no longer needs a `dispose()` method to be torn down — declaring the hook is enough for the container to track it. A failing hook no longer stops the others; the failures arrive together as an `AggregateError` (#5).
 - `AsyncPostConstructInSyncResolveError`, exported so consumers can catch it by type.
