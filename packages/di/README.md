@@ -2,7 +2,7 @@
 
 > Lightweight TypeScript dependency injection container for the theokit ecosystem.
 
-NestJS-compatible API (`@Injectable`, `@Inject`, `@Module`, `providers: []`) with three lifecycle scopes (SINGLETON, TRANSIENT, REQUEST via AsyncLocalStorage). Foundation for [`@theokit/orm`](../orm) and `@theokit/http` (publicado a partir do repo irmão `theokit`, em `packages/http`; o nome `@theokit/http-decorators` não existe mais — verificado 2026-08-06). Agent-aware integration via the companion [`@theokit/di-agent`](../di-agent) package.
+NestJS-compatible API (`@Injectable`, `@Inject`, `@Module`, `providers: []`) with three lifecycle scopes (SINGLETON, TRANSIENT, REQUEST via AsyncLocalStorage). Foundation for [`@theokit/orm`](../orm) and `@theokit/http`, which ships from the sibling `theokit` repository under `packages/http`. An earlier name, `@theokit/http-decorators`, no longer exists. Agent-aware integration via the companion [`@theokit/di-agent`](../di-agent) package.
 
 **Status:** initial release (`0.1.0-next.0` on npm `next` tag — promote to `latest` after 1-2 weeks dogfood).
 

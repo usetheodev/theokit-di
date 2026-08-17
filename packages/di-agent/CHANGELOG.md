@@ -1,17 +1,5 @@
 # Changelog
 
-## 0.2.0
-
-### Minor Changes
-
-- 461c020: Decorator-driven agent-team + workflow authoring (own identity — composition over a new engine).
-
-  - **`@Squad(metadata)`** property decorator + `readSquadMetadata` — declarative sequential agent team backed by `@theokit/di` `METADATA_KEYS.SQUAD`. Cross-validation Gap 1.
-  - **`@Step(metadata?)`** method decorator + `readStepMetadata` (`{ after?, name? }`) backed by `METADATA_KEYS.STEP`.
-  - **`buildWorkflow(instance)`** — compiles a class decorated with `@Step` into a `@theokit/sdk` `Workflow` (topological order by `after`; validates no-steps / unknown-after / cycle). No new runtime engine — composes `@theokit/sdk/workflow`. Cross-validation Gap 2.
-
-  First npm publish of these decorators (`0.1.0` on npm is the scaffold).
-
 All notable changes to `@theokit/di-agent` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
@@ -19,10 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
+### Changed
 
-- `@Squad({ agents, process? })` property decorator + `readSquadMetadata()` — the decorator surface for `@theokit/sdk` `createSquad` (decorator mandate). Stores team metadata via reflect-metadata, mirroring `@SubAgent`.
-- `@Step({ after?, name? })` method decorator + `readStepMetadata()` + `buildWorkflow(instance)` — decorator-driven workflow authoring. `@Step` declares steps + a single upstream dependency; `buildWorkflow` compiles the decorated class into a `@theokit/sdk` `Workflow` (composition — no new engine), topologically ordering steps and threading each return value to the next. Fail-fast on no steps / unknown `after` / cycle.
+- `repository`, `homepage` and `bugs` now point at `usetheodev/theokit-di`. They pointed at `usetheo/theokit-sdk`, so every "Repository" and "Report issues" link on npm led to a project that does not host this package.
+
+## 0.2.0
+
+### Minor Changes
+
+- Decorator-driven agent-team + workflow authoring (own identity — composition over a new engine).
+
+  - **`@Squad(metadata)`** property decorator + `readSquadMetadata` — declarative sequential agent team backed by `@theokit/di` `METADATA_KEYS.SQUAD`. Cross-validation Gap 1.
+  - **`@Step(metadata?)`** method decorator + `readStepMetadata` (`{ after?, name? }`) backed by `METADATA_KEYS.STEP`.
+  - **`buildWorkflow(instance)`** — compiles a class decorated with `@Step` into a `@theokit/sdk` `Workflow` (topological order by `after`; validates no-steps / unknown-after / cycle). No new runtime engine — composes `@theokit/sdk/workflow`. Cross-validation Gap 2.
+
+  First npm publish of these decorators (`0.1.0` on npm is the scaffold).
 
 ## [0.1.0] - 2026-05-31
 

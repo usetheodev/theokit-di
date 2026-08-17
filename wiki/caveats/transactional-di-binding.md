@@ -19,7 +19,7 @@ sources:
     resource: packages/orm/tests/integration/transactional.test.ts
     title: "@Transactional test suite"
   - id: sweep
-    resource: "grep for bindDataSourceToInstance across packages/*/src and packages/*/tests at commit 3861d5c"
+    resource: "grep for bindDataSourceToInstance across packages/*/src and packages/*/tests at commit 30d39c8"
     title: Binding call-site sweep
 ---
 
@@ -56,7 +56,7 @@ post-construction interception point. The
 itself inert.
 
 A sweep for `bindDataSourceToInstance` across every `src` and `tests` directory at
-commit `3861d5c` returns hits in exactly two files: its own declaration in
+commit `30d39c8` returns hits in exactly two files: its own declaration in
 `transactional.ts`, and the test file that calls it manually.[^sweep] No production
 code calls it.
 

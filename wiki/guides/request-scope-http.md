@@ -2,13 +2,13 @@
 type: Guide
 title: One agent per HTTP request
 description: Wiring a REQUEST-scoped Agent into an HTTP server, including the AsyncLocalStorage pitfall that breaks it.
-resource: examples/di-agent-express
+resource: examples/di-agent-express at commit c1781ee (removed from the tree after that commit)
 tags: [guide, request-scope, http, agent]
 generated: { by: claude-code/claude-opus-5, at: 2026-08-06T15:00:00Z }
 sources:
   - id: example
-    resource: examples/di-agent-express/README.md
-    title: di-agent-express dogfood example
+    resource: examples/di-agent-express/README.md at commit c1781ee
+    title: di-agent-express dogfood example (removed from the tree after c1781ee)
   - id: readme
     resource: packages/di-agent/README.md
     title: "@theokit/di-agent README"
@@ -155,6 +155,6 @@ and costs an Agent construction per call. Pass `scope: Scope.SINGLETON` to
 [`createAgentProvider`](/api/agent-provider.md) and drop `runInRequest`
 entirely.[^readme]
 
-[^example]: di-agent-express dogfood example
+[^example]: di-agent-express dogfood example, as it stood at commit c1781ee; the directory was removed from the tree in the following commit
 [^readme]: `@theokit/di-agent` README
 [^container]: Container implementation

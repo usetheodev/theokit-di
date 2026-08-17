@@ -84,23 +84,17 @@ interface Registration<T = unknown> {
 /**
  * Lightweight DI container. See `README.md` for usage examples.
  *
- * **Auditor-acknowledged size (info-level):** the 2026-06-06 architecture
- * audit (`/loop-architecture-review` Phase 3 principles-auditor) flagged
- * this class as 812 LOC (above the 500 LOC heuristic file budget) under
- * principle violation PV#10 (SRP / clean_function category, INFO severity).
- * The auditor's own description annotates it as "large but justified DI
- * orchestrator". The class is the Single-Point-of-Truth for DI resolution:
- * registry lookup, lifecycle (SINGLETON/TRANSIENT/REQUEST), `@Injectable`
- * metadata read, alias resolution, request-scope ALS propagation, and
- * dispose chain. Splitting these concerns into separate classes would
- * fragment cohesion and force consumers to coordinate across an internal
- * micro-interface that adds no testability or extensibility per
- * `rules/architecture.md § 3` (module cohesion) + KISS / YAGNI. ADR D422
- * documents an ongoing Extract-Method refactor targeting individual long
- * methods (not class-level split). Plan `arch-review-fixes-2026-06-06`
- * T11.2 documents this trade-off; audit DB row `principle_violations.id=10`
- * @ `packages/di/src/container.ts:87`; report at
- * `architecture-output/final_report.md § Findings by dimension` PV#10.
+ * **On the size of this class.** It is deliberately large: the single point
+ * of truth for DI resolution, covering registry lookup, the SINGLETON,
+ * TRANSIENT and REQUEST lifecycles, `@Injectable` metadata reads, alias
+ * resolution, request-scope propagation through `AsyncLocalStorage`, and the
+ * dispose chain. Splitting those concerns across separate classes would
+ * fragment cohesion and force consumers to coordinate through an internal
+ * micro-interface that buys neither testability nor extensibility.
+ *
+ * The complexity budget is held at the method level instead: long methods
+ * are broken up with Extract Method, which is why several private helpers
+ * below exist only to keep their caller readable.
  */
 export class Container {
   private readonly registrations = new Map<Token, Registration>();
@@ -219,7 +213,7 @@ export class Container {
   /**
    * Debug helper — returns a snapshot of the dependency graph.
    *
-   * Per ADR D7: detects cycles in unused providers too (resolve-time
+   * Detects cycles in unused providers too (resolve-time
    * detection only fires for resolves that actually traverse the cycle).
    * Use this proactively in tests / dev mode to surface latent cycles.
    */
@@ -463,7 +457,7 @@ export class Container {
    * Resolve constructor params + build instance. Tries sync first; if any
    * dep is async, falls back to awaiting via `resolveAsync`.
    *
-   * Refactored via Extract Method (ADR D422): orchestrates 3 helpers:
+   * Refactored via Extract Method: orchestrates 3 helpers:
    *   - validateMetadata: EC-12 detect emitDecoratorMetadata off
    *   - tryResolveSync: sync resolution loop with AsyncProvider bailout
    *   - resolveAllAsync: Promise.all fallback when any dep is async

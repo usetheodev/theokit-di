@@ -2,7 +2,7 @@
  * Module-loader — walks @Module() classes in BFS order, registers their
  * providers, validates imports + exports visibility, detects cyclic imports.
  *
- * Per ADR D4: modules are OPT-IN. Default usage is flat container.
+ * Modules are OPT-IN. Default usage is flat container.
  * Per v1.1 EC-4: registerModule() rejects undecorated classes with
  * InvalidModuleError pointing to the missing decorator.
  */

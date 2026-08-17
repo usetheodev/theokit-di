@@ -19,7 +19,7 @@ sources:
     resource: packages/di/tests/lifecycle.test.ts
     title: Lifecycle decorator test suite
   - id: grep
-    resource: "grep for PRIMARY / QUALIFIER_NAMES / POST_CONSTRUCT / PRE_DESTROY across packages/di/src at commit 3861d5c"
+    resource: "grep for PRIMARY / QUALIFIER_NAMES / POST_CONSTRUCT / PRE_DESTROY across packages/di/src at commit 30d39c8"
     title: Metadata key usage sweep
 ---
 
@@ -35,7 +35,7 @@ nothing reads. Applying them is a no-op at runtime.
 
 # The evidence
 
-A sweep for those four key names across `packages/di/src` at commit `3861d5c` returns
+A sweep for those four key names across `packages/di/src` at commit `30d39c8` returns
 exactly two kinds of hit: the declaration in `internal/metadata.ts`, and the
 `defineMetadata` call in each decorator. There is no `getMetadata` for any of
 them.[^grep]

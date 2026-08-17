@@ -7,7 +7,7 @@ tags: [architecture, testing, coverage]
 generated: { by: claude-code/claude-opus-5, at: 2026-08-06T15:00:00Z }
 sources:
   - id: run
-    resource: "pnpm test at commit 3861d5c, 2026-08-06"
+    resource: "pnpm test at commit 30d39c8, 2026-08-06"
     title: Observed test run
   - id: ditests
     resource: packages/di/tests
@@ -20,7 +20,7 @@ sources:
     title: "@theokit/orm test suite"
 ---
 
-Observed on 2026-08-06 at commit `3861d5c`, running `pnpm test` across the
+Observed on 2026-08-06 at commit `30d39c8`, running `pnpm test` across the
 workspace.[^run]
 
 | Package | Files | Passed | Skipped |

@@ -5,7 +5,7 @@
 
 /**
  * Constructor of a class — what TypeScript emits for `class X { ... }`.
- * Used as a Class-token (per ADR D2).
+ * Used as a Class-token.
  */
 // biome-ignore lint/suspicious/noExplicitAny: constructor arg types are intentionally `any[]` so any class fits
 export type ClassConstructor<T = unknown> = new (...args: any[]) => T;
@@ -13,14 +13,14 @@ export type ClassConstructor<T = unknown> = new (...args: any[]) => T;
 /**
  * Token: anything that identifies a dependency in the container.
  *
- * Per ADR D2: Class primary (auto-resolution via `reflect-metadata`),
+ * Class primary (auto-resolution via `reflect-metadata`),
  * String fallback (for primitives / interfaces). Symbol explicitly NOT
  * supported in v1 (deferred to v2 if real demand surfaces).
  */
 export type Token<T = unknown> = ClassConstructor<T> | string;
 
 /**
- * Lifecycle scope (per ADR D5). The container honors three modes:
+ * Lifecycle scope. The container honors three modes:
  *
  * - `SINGLETON` — single instance shared across the entire container
  * - `TRANSIENT` — fresh instance per resolve
@@ -111,7 +111,7 @@ export interface Disposable {
 }
 
 /**
- * `analyze()` debug return shape (per ADR D7).
+ * `analyze()` debug return shape.
  */
 export interface DependencyGraph {
   nodes: ReadonlyArray<{
@@ -131,7 +131,7 @@ export interface DependencyGraph {
  * register a provider. Declared here (a leaf type module) so `module-loader.ts`
  * depends on this interface instead of the concrete `Container` class — which
  * imports `loadModule` back from the loader, forming a type-only cycle
- * (arch-review ADR 0001). The concrete `Container` satisfies this structurally.
+ * The concrete `Container` satisfies this structurally.
  */
 export interface ModuleRegistrar {
   register<T>(providerOrClass: Provider<T> | ClassConstructor<T>): void;

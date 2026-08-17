@@ -1,13 +1,5 @@
 # Changelog
 
-## 0.1.1
-
-### Patch Changes
-
-- 461c020: Add `METADATA_KEYS.SQUAD` (`"usetheo:di:squad"`) and `METADATA_KEYS.STEP` (`"usetheo:di:step"`) — new metadata keys backing the `@Squad()` and `@Step()` decorators in `@theokit/di-agent`. Shipped as a patch (additive values on the existing exported `METADATA_KEYS`) to keep `@theokit/di-agent` and the in-progress `@theokit/orm` (prerelease `0.1.0-next.1`) inside their `^0.1.0` peer range — a `minor` (`0.2.0`) would fall outside `^0.1.x` and force both dependents to `1.0.0`.
-
-  Also: broke the `container.ts ↔ internal/module-loader.ts` type-only cycle (arch-review ADR 0001) — `loadModule` now depends on a narrow `ModuleRegistrar` interface from the leaf `types.ts` instead of the concrete `Container`. No behavior change; `Container` satisfies it structurally.
-
 All notable changes to `@theokit/di` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
@@ -15,22 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Added
-
-- `METADATA_KEYS.SQUAD` (`"usetheo:di:squad"`) — metadata key backing the `@Squad()` decorator in `@theokit/di-agent`.
-- `METADATA_KEYS.STEP` (`"usetheo:di:step"`) — metadata key backing the `@Step()` decorator in `@theokit/di-agent`.
-
 ### Changed
 
-- Broke the `container.ts ↔ internal/module-loader.ts` type-only dependency cycle (arch-review ADR 0001). `loadModule` now takes a narrow `ModuleRegistrar` interface (just `register(...)`) from the leaf `types.ts` instead of importing the concrete `Container`. No behavior change — `Container` satisfies it structurally; all 69 tests GREEN, `madge --circular` clean.
+- `repository`, `homepage` and `bugs` now point at `usetheodev/theokit-di`. They pointed at `usetheo/theokit-sdk`, so every "Repository" and "Report issues" link on npm led to a project that does not host this package.
+- The package description no longer names `@theokit/http-decorators`, which does not exist. The package is `@theokit/http`.
+- The README no longer carries a Portuguese clause, and says plainly where `@theokit/http` ships from.
+- JSDoc on the public surface no longer cites ADRs, audit findings or planning documents that exist in no repository a reader can reach. The rationale each citation stood for is now written inline, so it survives into the published type declarations.
 
-### Changed
+## 0.1.1
 
-- **Documentation only:** expanded JSDoc header on `Container` class (`src/container.ts:87`) acknowledging auditor finding PV#10 from the 2026-06-06 architecture audit. The 812 LOC class size is above the 500 LOC heuristic file budget but justified as the Single-Point-of-Truth for DI resolution (registry lookup, lifecycle SINGLETON/TRANSIENT/REQUEST, `@Injectable` metadata read, alias resolution, request-scope ALS propagation, dispose chain). Splitting would fragment cohesion per `rules/architecture.md § 3` + KISS / YAGNI. ADR D422 tracks ongoing Extract-Method refactor at the method level. No code change. Plan `arch-review-fixes-2026-06-06` T11.2 records the trade-off.
+### Patch Changes
+
+- Add `METADATA_KEYS.SQUAD` (`"usetheo:di:squad"`) and `METADATA_KEYS.STEP` (`"usetheo:di:step"`) — new metadata keys backing the `@Squad()` and `@Step()` decorators in `@theokit/di-agent`. Shipped as a patch (additive values on the existing exported `METADATA_KEYS`) to keep `@theokit/di-agent` and the in-progress `@theokit/orm` (prerelease `0.1.0-next.1`) inside their `^0.1.0` peer range — a `minor` (`0.2.0`) would fall outside `^0.1.x` and force both dependents to `1.0.0`.
+
+  Also: broke the `container.ts ↔ internal/module-loader.ts` type-only cycle (arch-review ADR 0001) — `loadModule` now depends on a narrow `ModuleRegistrar` interface from the leaf `types.ts` instead of the concrete `Container`. No behavior change; `Container` satisfies it structurally.
 
 ## [0.1.0] - 2026-05-31
 
-> First GA release. Promotes `0.1.0-next.0` to stable with the EC-R3-1 single-flight Promise cache fix (shipped in `0.1.0-next.0` commit `520fe7d`) plus the biome-cleanup refactors below. API contract preserved — no breaking changes from `0.1.0-next.0`.
+> First GA release. Promotes `0.1.0-next.0` to stable with the single-flight Promise cache fix (shipped in `0.1.0-next.0`) plus the biome-cleanup refactors below. API contract preserved — no breaking changes from `0.1.0-next.0`.
 
 ### Changed
 

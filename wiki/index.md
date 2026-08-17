@@ -8,7 +8,7 @@ Agent-readable knowledge for the `theokit-di` monorepo — the dependency-inject
 ecosystem of the Theo platform: a NestJS-flavoured IoC container, an agent-aware DI
 layer, and a DI-driven ORM over Drizzle.
 
-Every concept here was derived from the source tree at commit `3861d5c` and from a
+Every concept here was derived from the source tree at commit `30d39c8` and from a
 test run on 2026-08-06 (252 passing tests). Where the shipped code and its own
 documentation disagree, the [caveats](caveats/index.md) section states what the code
 actually does.
