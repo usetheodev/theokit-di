@@ -11,7 +11,7 @@ import {
 } from "../src/index.js";
 
 // ─────────────────────────────────────────────────────────────────────
-// T2.2 — @Module + module-loader + freeze (v1.1 EC-4, EC-8 + v1.2 EC-R2-5)
+// @Module + module-loader + freeze
 // ─────────────────────────────────────────────────────────────────────
 
 describe("@Module() decorator + Container.registerModule()", () => {
@@ -67,7 +67,7 @@ describe("@Module() decorator + Container.registerModule()", () => {
   });
 });
 
-describe("@Module — v1.1 EC-4 (undecorated class → InvalidModuleError)", () => {
+describe("@Module — undecorated class throws InvalidModuleError", () => {
   it("registerModule on undecorated class throws InvalidModuleError", () => {
     class PlainModule {}
     const c = new Container();
@@ -87,7 +87,7 @@ describe("@Module — v1.1 EC-4 (undecorated class → InvalidModuleError)", () 
   });
 });
 
-describe("@Module — v1.1 EC-8 (export validation at registerModule time)", () => {
+describe("@Module — export validation at registerModule time", () => {
   it("throws InvalidExportError when export token is not in providers[]", () => {
     @Injectable()
     class Foo {}
@@ -134,7 +134,7 @@ describe("@Module — cyclic imports", () => {
   });
 });
 
-describe("@Module — v1.2 EC-R2-5 (freeze after first resolve)", () => {
+describe("@Module — freeze after first resolve", () => {
   it("registerModule after first resolve throws ContainerFrozenError (default)", () => {
     @Injectable()
     class Foo {

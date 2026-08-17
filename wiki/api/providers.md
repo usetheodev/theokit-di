@@ -29,7 +29,7 @@ type Token<T = unknown> = ClassConstructor<T> | string;
 Class tokens are the primary form — the container reads `design:paramtypes` and
 resolves constructor parameters with no annotation at all. String tokens are the
 fallback for things that have no runtime class: primitives, interfaces, configuration
-values. Symbols are deliberately not supported in v1; the recorded decision (ADR D2)
+values. Symbols are deliberately not supported in v1; the recorded decision
 defers them to v2 if real demand appears.[^types]
 
 # The four shapes

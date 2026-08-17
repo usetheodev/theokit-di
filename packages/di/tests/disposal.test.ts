@@ -9,7 +9,7 @@ import {
 } from "../src/index.js";
 
 // ─────────────────────────────────────────────────────────────────────
-// T3.3 — Disposal lifecycle (v1.1 EC-3 + v1.2 EC-R2-4 + EC-9)
+// Disposal lifecycle
 // ─────────────────────────────────────────────────────────────────────
 
 describe("Container.dispose()", () => {
@@ -62,7 +62,7 @@ describe("Container.dispose()", () => {
     expect(syncDisposeCalled).toBe(false);
   });
 
-  it("EC-9 — continues on individual failure and aggregates errors", async () => {
+  it("continues on individual failure and aggregates errors", async () => {
     @Injectable()
     class GoodA implements Disposable {
       dispose(): void {}
@@ -138,7 +138,7 @@ describe("Container.dispose()", () => {
   });
 });
 
-describe("runInRequest — v1.1 EC-3 (disposal even on callback throw)", () => {
+describe("runInRequest — disposal even on callback throw", () => {
   it("disposes REQUEST-scoped instances when callback succeeds", async () => {
     let disposed = false;
 

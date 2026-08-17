@@ -84,7 +84,7 @@ describe("Repository CRUD", () => {
     expect(typeof q.where).toBe("function");
   });
 
-  describe("EC-1 — entity without primary key", () => {
+  describe("entity without primary key", () => {
     it("throws at construction time", () => {
       expect(() => new Repository(db, noPkEntity as unknown as typeof users)).toThrow(
         OrmConfigurationError,
@@ -92,7 +92,7 @@ describe("Repository CRUD", () => {
     });
   });
 
-  describe("EC-2 — id guard (prevents DELETE WHERE col IS NULL data loss)", () => {
+  describe("id guard (prevents DELETE WHERE col IS NULL data loss)", () => {
     it("findById throws OrmValidationError on undefined", async () => {
       await expect(repo.findById(undefined as unknown as string)).rejects.toThrow(
         OrmValidationError,

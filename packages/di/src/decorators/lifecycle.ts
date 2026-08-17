@@ -4,7 +4,7 @@ import { METADATA_KEYS } from "../internal/metadata.js";
  * @PostConstruct — method called after DI resolution completes.
  * All constructor dependencies are injected before this method runs.
  *
- * Supports async methods (EC-1): if the method returns a Promise,
+ * Supports async methods: if the method returns a Promise,
  * the Container awaits it before returning the instance.
  *
  * @example
@@ -26,7 +26,7 @@ export function PostConstruct(target: object, propertyKey: string | symbol): voi
 
 /**
  * @PreDestroy — method called during container.dispose().
- * Called BEFORE Disposable.dispose() (EC-3).
+ * Called BEFORE Disposable.dispose().
  *
  * @example
  * ```ts

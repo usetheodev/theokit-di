@@ -2,7 +2,7 @@
 """
 Load JSON Schema 7 files emitted by @theokit/orm and create equivalent
 SQLAlchemy tables in an in-memory SQLite. Proof that the polyglot story
-works (ADR D11 carry-over) — Python consumers can build a real ORM model
+works — Python consumers can build a real ORM model
 from the schemas TypeScript emits.
 
 Usage:

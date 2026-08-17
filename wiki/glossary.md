@@ -17,7 +17,7 @@ sources:
 
 Token
 : What identifies a dependency — a class constructor or a string. Symbols are
-  deliberately unsupported in v1 (ADR D2). See [providers](/api/providers.md).
+  deliberately unsupported in v1. See [providers](/api/providers.md).
 
 Provider
 : The instruction for materializing a token's value. Exactly one of `useClass`,
@@ -95,15 +95,12 @@ Transaction context
 # Cross-cutting
 
 ADR
-: Architecture Decision Record. Referenced throughout the source by identifier — D2 for
-  tokens, D4 for opt-in modules, D5 for scopes, D7 for cycle detection and `analyze()`,
-  D11 for the polyglot strategy, D422 for the Extract-Method refactor, D431 for making
-  decorators optional. The documents themselves live outside this repository.
-
-EC-*
-: Edge case identifiers from the implementation plans, embedded in code comments and
-  changelog entries — for example EC-R2-1 for cycle-before-cache ordering and EC-R3-1
-  for the single-flight cache.
+: Architecture Decision Record. Source comments and changelog entries used to cite these
+  by bare identifier — D2, D4, D5, D7, D11, D422, D431 — but the documents live outside
+  this repository, so the citations pointed nowhere a reader could follow. They were
+  removed from the source on 2026-08-17 and the reasoning each one stood for is now
+  written where it applies. A few survive in released changelog entries, which are
+  immutable.
 
 Inert decorator
 : A decorator that writes metadata nothing reads. See

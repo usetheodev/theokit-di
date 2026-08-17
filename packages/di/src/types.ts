@@ -95,7 +95,7 @@ export interface ContainerOptions {
    * When `true`, allows `register()` / `registerModule()` calls AFTER
    * the first `resolve()`. Default `false` — fail-fast on misuse.
    *
-   * v1.2 EC-R2-5: containers freeze after first resolve to prevent
+   * Containers freeze after first resolve to prevent
    * subtle bugs where a singleton is constructed with one set of
    * registrations and a different set is added later.
    */

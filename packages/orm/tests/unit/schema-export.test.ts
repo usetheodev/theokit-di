@@ -119,7 +119,7 @@ describe("schema-export — exportSchemas (record)", () => {
   });
 });
 
-describe("schema-export — EC-11 unknown type throws", () => {
+describe("schema-export — unknown type throws", () => {
   it("throws OrmSchemaExportError when an entry has an unknown column shape", () => {
     const fakeTable = {
       [Symbol.for("drizzle:Name")]: "fake",

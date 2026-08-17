@@ -12,7 +12,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `repository`, `homepage` and `bugs` now point at `usetheodev/theokit-di`. They pointed at `usetheo/theokit-sdk`, so every "Repository" and "Report issues" link on npm led to a project that does not host this package.
 - The package description no longer names `@theokit/http-decorators`, which does not exist. The package is `@theokit/http`.
 - The README no longer carries a Portuguese clause, and says plainly where `@theokit/http` ships from.
-- JSDoc on the public surface no longer cites ADRs, audit findings or planning documents that exist in no repository a reader can reach. The rationale each citation stood for is now written inline, so it survives into the published type declarations.
+- JSDoc on the public surface no longer cites ADRs, audit findings, plan tasks or edge-case identifiers that exist in no repository a reader can reach. The rationale each citation stood for is now written inline, so it survives into the published type declarations.
+- `Primary` now declares its parameter as a constructor type rather than `Function`. `Function` is the widest callable type there is, so it documented nothing and admitted values that are not classes. Any class you could already decorate still type-checks.
+
+### Fixed
+
+- The English-only lint gate could not fail on an accented word. It split identifiers with an ASCII-only pattern before testing them for diacritics, so `não` became `n` and `o` and the diacritic tier was unreachable. Both tiers now work, verified by planting an accented identifier and watching the sweep turn red (#7).
 
 ## 0.1.1
 

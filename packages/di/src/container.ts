@@ -3,9 +3,8 @@
  *   - 3 scopes (SINGLETON / TRANSIENT / REQUEST via AsyncLocalStorage)
  *   - 4 provider types (useClass / useFactory / useValue / useExisting)
  *   - Cycle detection at resolve-time (path tracking)
- *   - Promise-lock REQUEST cache (v1.1 EC-2) with cycle-first ordering
- *     (v1.2 EC-R2-1) and reject cleanup (v1.2 EC-R2-2)
- *   - Disposal lifecycle (T3.3) + freeze on first resolve (v1.2 EC-R2-5)
+ *   - Promise-lock REQUEST cache with cycle-first ordering and reject cleanup
+ *   - Disposal lifecycle + freeze on first resolve
  */
 
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -48,8 +47,8 @@ import { Scope } from "./types.js";
 interface RequestStore {
   /**
    * Per-request cache. Stores either a resolved value OR a pending Promise
-   * during materialization (v1.1 EC-2). On Promise rejection, the entry is
-   * deleted (v1.2 EC-R2-2).
+   * during materialization. On Promise rejection, the entry is
+   * deleted.
    */
   readonly cache: Map<Token, unknown>;
   /** Instances created during this request — disposed when request ends. */
@@ -125,7 +124,7 @@ export class Container {
    *   - A full Provider (useClass / useFactory / useValue / useExisting)
    *   - A bare class (shorthand expands to ClassProvider { provide: X, useClass: X })
    *
-   * Per v1.1 EC-1, ClassProvider validation runs via `validateClassProvider()`
+   * ClassProvider validation runs via `validateClassProvider()`
    * regardless of which API path was used.
    */
   register<T>(providerOrClass: Provider<T> | ClassConstructor<T>): void {
@@ -151,9 +150,9 @@ export class Container {
    * modules. Walks imports BFS, registers every provider, validates
    * exports.
    *
-   * Per v1.1 EC-4: undecorated class throws `InvalidModuleError`.
-   * Per v1.2 EC-R2-5: respects the freeze-after-first-resolve guarantee
-   *   (each child `register()` checks `assertNotFrozen`).
+   * An undecorated class throws `InvalidModuleError`. Respects the
+   * freeze-after-first-resolve guarantee — each child `register()` checks
+   * `assertNotFrozen`.
    */
   registerModule(moduleClass: ClassConstructor): void {
     this.assertNotDisposed();
@@ -194,7 +193,7 @@ export class Container {
    * providers resolved within `callback` (or any async continuation) share
    * a single per-request cache.
    *
-   * v1.1 EC-3: try/finally guarantees REQUEST-scoped instances are disposed
+   * try/finally guarantees REQUEST-scoped instances are disposed
    * even if the callback throws.
    */
   async runInRequest<R>(callback: () => R | Promise<R>): Promise<R> {
@@ -334,7 +333,7 @@ export class Container {
   }
 
   /**
-   * v1.1 EC-1: shared by both declarative providers: [] AND imperative
+   * Shared by both declarative providers: [] AND imperative
    * register() — every class provider must have @Injectable().
    */
   private validateClassProvider<T>(provider: ClassProvider<T>): void {
@@ -353,7 +352,7 @@ export class Container {
   }
 
   /**
-   * v1.2 EC-R2-5: container freezes on first resolve. Late registrations
+   * The container freezes on first resolve. Late registrations
    * require explicit `allowDynamicRegistration: true` (testing escape hatch).
    */
   private assertNotFrozen(token: Token): void {
@@ -458,7 +457,7 @@ export class Container {
    * dep is async, falls back to awaiting via `resolveAsync`.
    *
    * Refactored via Extract Method: orchestrates 3 helpers:
-   *   - validateMetadata: EC-12 detect emitDecoratorMetadata off
+   *   - validateMetadata: detect emitDecoratorMetadata off
    *   - tryResolveSync: sync resolution loop with AsyncProvider bailout
    *   - resolveAllAsync: Promise.all fallback when any dep is async
    */
@@ -484,7 +483,7 @@ export class Container {
   }
 
   /**
-   * EC-12 detection: zero paramTypes for a class that declares a non-empty
+   * Detection: zero paramTypes for a class that declares a non-empty
    * constructor strongly suggests emitDecoratorMetadata is off.
    */
   private validateMetadata<T>(target: ClassConstructor<T>, paramTypes: readonly unknown[]): void {
@@ -602,7 +601,7 @@ export class Container {
   // ─────────────────────────────────────────────────────────────────────
 
   private resolveInContext<T>(token: Token<T>, ctx: ResolutionContext): T {
-    // 1. Cycle check FIRST (v1.2 EC-R2-1)
+    // 1. Cycle check FIRST
     if (ctx.path.includes(token)) {
       throw new CyclicDependencyError([...ctx.path, token]);
     }
@@ -631,7 +630,7 @@ export class Container {
     const value = registration.factory(childCtx);
 
     if (value instanceof Promise) {
-      // EC-R3-1: Cache the in-flight Promise BEFORE throwing so the async
+      // Cache the in-flight Promise BEFORE throwing so the async
       // fallback (constructClassWithAsyncFallback → ctx.resolveAsync) finds
       // it and does NOT call the factory a second time. Without this the
       // factory runs twice — once here (discarded) and once on async retry —
@@ -660,7 +659,7 @@ export class Container {
   // ─────────────────────────────────────────────────────────────────────
 
   private async resolveAsyncInContext<T>(token: Token<T>, ctx: ResolutionContext): Promise<T> {
-    // 1. Cycle check FIRST (v1.2 EC-R2-1) — BEFORE cache lookup.
+    // 1. Cycle check FIRST — BEFORE cache lookup.
     //    Otherwise async cycles hit the in-flight Promise and deadlock.
     if (ctx.path.includes(token)) {
       throw new CyclicDependencyError([...ctx.path, token]);
@@ -688,7 +687,7 @@ export class Container {
     // 4. Store Promise OR value immediately (so concurrent callers wait).
     if (result instanceof Promise) {
       this.storeInCache(token, result, registration.scope);
-      // v1.2 EC-R2-2: cleanup cache on rejection — never poison the cache.
+      // Cleanup cache on rejection — never poison the cache.
       result.then(
         (value) => {
           this.storeInCache(token, value, registration.scope);

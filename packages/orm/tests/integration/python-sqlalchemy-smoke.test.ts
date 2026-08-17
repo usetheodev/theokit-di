@@ -73,7 +73,7 @@ if (!probe.ok) {
   process.stderr.write(`[python-sqlalchemy-smoke] SKIPPED — ${probe.reason}\n`);
 }
 
-describe("Python SQLAlchemy polyglot smoke (ADR D11)", () => {
+describe("Python SQLAlchemy polyglot smoke", () => {
   itSkippable(
     "loads JSON Schema 7 emitted by @theokit/orm into SQLAlchemy + create_all succeeds",
     () => {

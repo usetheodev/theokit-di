@@ -82,7 +82,7 @@ describe("@SubAgent", () => {
     expect(readSubAgentMetadata(A).get("r")?.instructions).toBe(instructions);
   });
 
-  it("stores empty instructions without error (EC-4)", () => {
+  it("stores empty instructions without error", () => {
     class A {
       @SubAgent({ ...baseSpec, instructions: "" })
       r!: unknown;

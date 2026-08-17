@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { Container, Inject, Injectable, Scope } from "../src/index.js";
 
 // ─────────────────────────────────────────────────────────────────────
-// T3.2 — Cyclic detection + container.analyze() debug
+// Cyclic detection + container.analyze() debug
 // ─────────────────────────────────────────────────────────────────────
 
 describe("Container.analyze() — debug dependency graph", () => {
@@ -62,7 +62,7 @@ describe("Container.analyze() — debug dependency graph", () => {
     expect(cycles.length).toBeGreaterThanOrEqual(1);
   });
 
-  it("EC-11 — handles a graph with 50+ nodes and multiple cycles without stack overflow", () => {
+  it("handles a graph with 50+ nodes and multiple cycles without stack overflow", () => {
     const c = new Container();
     // Build a linear chain of 50 providers via @Inject string tokens.
     for (let i = 0; i < 50; i += 1) {

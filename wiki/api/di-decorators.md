@@ -103,7 +103,7 @@ class UserModule {}
 ```
 
 The decorated class is never instantiated — it only carries metadata that
-`registerModule()` reads.[^module] Modules are opt-in (ADR D4); a flat container is
+`registerModule()` reads.[^module] Modules are opt-in; a flat container is
 the default usage.
 
 `loadModule` walks imports depth-first with a path stack, so a cycle throws

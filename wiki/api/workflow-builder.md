@@ -93,9 +93,8 @@ recursion depth is bounded by the chain length rather than by fan-out.[^builder]
 
 # Where it came from
 
-Shipped in `0.2.0` alongside `@Squad`, closing what a cross-validation exercise
-recorded as Gap 2 — the ecosystem had a workflow engine and a decorator vocabulary, but
-nothing that compiled one into the other.[^changelog]
+Shipped in `0.2.0` alongside `@Squad`. The ecosystem already had a workflow engine and
+a decorator vocabulary, but nothing that compiled one into the other.[^changelog]
 
 [^builder]: `buildWorkflow` implementation
 [^tests]: `buildWorkflow` test suite

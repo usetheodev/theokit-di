@@ -19,9 +19,7 @@
   decorator design itself is intentional and was not filed.
 * **Boundary**: Scope is this repository only. `@theokit/sdk` and `@theokit/http` live
   in sibling repositories and were not read; claims about them are attributed to the
-  manifests and READMEs here. The ADR documents referenced throughout the source
-  (D2, D4, D5, D7, D11, D422, D431, arch-review ADR 0001) are not present in this
-  repository and were not consulted — they are named as the source names them.
+  manifests and READMEs here.
 * **Boundary**: No concept carries a `verified` entry. Every fact was read from the
   source, but no human has reviewed this bundle.
 
@@ -34,9 +32,10 @@
 * **Update**: `examples/di-agent-express` was removed from the tree. The guide that
   cites it now anchors its provenance to commit `c1781ee`, the last commit in which
   the directory existed.
-* **Boundary**: The ADR citations this bundle attributes to the source (D2, D4, D5,
-  D422 and arch-review ADR 0001 in `packages/di/src`) were removed from the source in
-  the same pass, because the documents they pointed at exist in no reachable
-  repository. The mentions here remain a faithful record of what the source said at
-  commit `30d39c8`, the commit this bundle was derived from. D11, D431 and D8 are
-  still named by changelogs, READMEs and one test.
+* **Update**: The source used to cite decisions, audit findings, plan tasks and edge
+  cases by bare identifier — `ADR D2`, `PV#10`, `EC-R2-1`, `M7-7`, `T4.2` and their
+  kind — in comments, JSDoc, test names and README prose. None of the documents behind
+  those identifiers exist in any repository a reader can reach, and the JSDoc ones
+  shipped to consumers through the published type declarations. They were all removed,
+  with the reasoning each stood for written out where it applies. This bundle no longer
+  cites them either. Some survive in released changelog entries, which are immutable.

@@ -6,13 +6,13 @@
  *
  * - JSDoc on an exported symbol is emitted into the published `.d.ts`, so a
  *   Portuguese comment ships to every consumer and shows up on editor hover.
- *   `CLAUDE.md` makes the exported types the canonical public contract; a
- *   contract nobody outside this repo can read is not a contract.
+ *   The exported types are the canonical public contract, and a contract
+ *   nobody outside this repository can read is not a contract.
  * - A Portuguese identifier in the public surface is worse still — one shipped
  *   in `@theokit/sdk/compaction` for several releases before this gate existed,
  *   and renaming it was a breaking change. The cost compounds with every
  *   release that carries it.
- * - Test names are executable documentation (`.claude/rules/testing.md` § 3).
+ * - Test names are executable documentation.
  *
  * Detection is two-tier so precision is auditable:
  *
@@ -43,44 +43,36 @@ const REPO_ROOT = join(__dirname, "..", "..", "..", "..");
 /**
  * Scanned roots, relative to the repository root. `"."` means the whole repository.
  *
- * It scans the whole tree rather than an explicit list because the first version listed
- * `sdk/{src,tests}` and `sdk-tools/{src,tests}` — and silently missed `sdk-pty` and `sdk-budget`,
- * which carried 60 Portuguese lines nobody was watching. A gate whose coverage is a hand-kept list
- * decays the moment a package is added.
+ * It scans the whole tree rather than an explicit list, and both halves of that were learned the
+ * hard way in `theokit-sdk`, where this gate originated. Its first version named individual
+ * packages and silently missed two others carrying 60 Portuguese lines nobody was watching: a gate
+ * whose coverage is a hand-kept list decays the moment a package is added. Scoping the root to
+ * `packages/` then hid everything outside it — top-level docs, tooling, examples and the root
+ * README — until a 2156-line Portuguese document turned up in exactly that blind spot.
  *
- * The root moved out of `packages/` for the same reason, one level up: scoped to packages, the gate
- * could not see `docs/`, `tools/`, `scripts/`, `examples/` or the root `README.md` / `CHANGELOG.md`,
- * so nothing stopped a Portuguese document from landing there. It found exactly that — a 2156-line
- * course under `docs/course/`, invisible for as long as the scope was narrower than the repository.
+ * So the scope is the repository, and it widens by itself.
  */
 const SCAN_ROOTS = ["."];
 
 /**
  * Loanwords English legitimately borrows with their diacritics. `façade` is a
- * locked term in `CLAUDE.md` ("Agent façade"), so it is not a violation.
+ * term this ecosystem uses deliberately ("Agent façade"), so it is not a violation.
  */
 const WORD_ALLOWLIST = new Set(["façade", "façades", "naïve", "café", "résumé"]);
 
-/** Files exempt from the scan, relative to the repository root. */
-/** B-065 — every CHANGELOG, root or per package. Released entries are immutable (Rule 6). */
-const isChangelog = (rel: string): boolean => rel === "CHANGELOG.md" || rel.endsWith("/CHANGELOG.md");
+/**
+ * Every CHANGELOG, root or per package. Entries for a RELEASED version are immutable: translating
+ * one would rewrite a record of what shipped, which is the discipline this gate exists to serve
+ * rather than to override. New entries are written in English; the gate cannot tell a released
+ * entry from a fresh one, so the file is exempt and the rule carries it.
+ */
+const isChangelog = (rel: string): boolean =>
+  rel === "CHANGELOG.md" || rel.endsWith("/CHANGELOG.md");
 
+/** Files exempt from the scan, relative to the repository root. */
 const FILE_ALLOWLIST = new Set<string>([
   // This file names Portuguese words in order to ban them.
   "packages/di/tests/lint/no-ptbr.test.ts",
-  // B-065 — the repository CHANGELOG. Entries for a RELEASED version are immutable (Unbreakable
-  // Rule 6): translating one would rewrite a record of what shipped, which is the discipline this
-  // gate exists to serve rather than to override. New entries are written in English; the gate
-  // cannot tell a released entry from a fresh one, so the file is exempt and the rule carries it.
-  "CHANGELOG.md",
-  // A recall probe whose assertion is what a model ANSWERS. It matches both spellings of a Brazilian
-  // city because a model replying in Portuguese uses the accented one; dropping that alternative to
-  // satisfy this gate would narrow what the probe accepts and weaken the audit it exists to run.
-  // Same category as the skipped session transcripts: linting the user's own words, not our prose.
-  // The `docs/course/theokit-agent-ai-course.md` exemption was removed on 2026-08-06, on the
-  // condition its own comment set: "delete this entry the day the course becomes English". The
-  // course was decomposed into the `wiki/` bundle in English, so the gate now covers every word
-  // that replaced it and there is no exempt prose left in the repository.
 ]);
 
 /**
@@ -286,9 +278,9 @@ const SCANNED_EXT = /\.(?:ts|mts|cts|js|mjs|cjs|md)$/;
 /**
  * Directories that hold build output, dependencies or local runtime state — never source we own.
  *
- * Dot-directories are skipped wholesale: inside a package they are tool or runtime state
- * (`.theokit/memory/sessions/` holds real conversation transcripts, which are Portuguese because
- * the user writes Portuguese). Linting a session transcript would be linting the user.
+ * Dot-directories are skipped wholesale: inside a package they hold tool or runtime state, which
+ * includes stored conversation transcripts. Those are Portuguese because the user writes
+ * Portuguese, and linting a transcript would be linting the user rather than our prose.
  */
 const SKIP_DIRS = new Set(["node_modules", "dist", "coverage", "docs-json"]);
 
@@ -323,9 +315,22 @@ async function walk(dir: string, out: string[] = []): Promise<string[]> {
   return out;
 }
 
-/** Split an identifier into its camelCase / PascalCase / snake_case parts. */
+/**
+ * Split an identifier into its camelCase / PascalCase / snake_case parts.
+ *
+ * The character classes include accented Latin letters, and that is load-bearing rather than
+ * cosmetic. An ASCII-only `[a-z]` splits `não` into `n` and `o` — dropping the `ã` on the floor
+ * before {@link classifyLine} ever runs {@link DIACRITIC} over the parts. That made tier 1
+ * unreachable on every identifier and every word, so the gate was green because it could not see,
+ * not because the tree was clean. Verified after the fix: `não` yields `["não"]`, `código` yields
+ * `["código"]`, and planting either in a source file turns the sweep red.
+ */
+const UPPER = "A-ZÀ-ÖØ-Þ";
+const LOWER = "a-zß-öø-ÿ";
+const IDENTIFIER_PART = new RegExp(`[${UPPER}]?[${LOWER}]+|[${UPPER}]+(?![${LOWER}])`, "g");
+
 function identifierParts(word: string): string[] {
-  return word.split(/[_$]/).flatMap((p) => p.match(/[A-Z]?[a-z]+|[A-Z]+(?![a-z])/g) ?? []);
+  return word.split(/[_$]/).flatMap((p) => p.match(IDENTIFIER_PART) ?? []);
 }
 
 function stripDiacritics(word: string): string {

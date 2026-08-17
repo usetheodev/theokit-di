@@ -43,7 +43,7 @@ export class TokenNotFoundError extends Error {
  * Thrown when a resolution chain contains a cycle (A → B → A).
  * Detected at resolve-time, not register-time.
  *
- * v1.2 EC-R2-1: cycle check happens BEFORE cache lookup in resolveAsync
+ * The cycle check happens BEFORE cache lookup in resolveAsync
  * to prevent infinite Promise await deadlocks on async REQUEST-scoped
  * cycles.
  */
@@ -88,7 +88,7 @@ export class ScopeViolationError extends Error {
  * `design:paramtypes` metadata that the container needs to auto-resolve
  * constructor parameters.
  *
- * v1.1 EC-1: validateClassProvider() is called by BOTH the declarative
+ * validateClassProvider() is called by BOTH the declarative
  * `providers: []` path AND the imperative `container.register()` path.
  */
 export class MissingInjectableError extends Error {

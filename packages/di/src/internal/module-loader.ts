@@ -3,7 +3,7 @@
  * providers, validates imports + exports visibility, detects cyclic imports.
  *
  * Modules are OPT-IN. Default usage is flat container.
- * Per v1.1 EC-4: registerModule() rejects undecorated classes with
+ * registerModule() rejects undecorated classes with
  * InvalidModuleError pointing to the missing decorator.
  */
 
@@ -13,7 +13,7 @@ import type { ClassConstructor, ModuleRegistrar, Provider, Token } from "../type
 
 /**
  * Thrown when a class is passed to `Container.registerModule()` without
- * the `@Module()` decorator (v1.1 EC-4 MUST FIX).
+ * the `@Module()` decorator.
  */
 export class InvalidModuleError extends Error {
   override readonly name = "InvalidModuleError" as const;
@@ -27,7 +27,7 @@ export class InvalidModuleError extends Error {
 
 /**
  * Thrown when a module declares an export for a token that isn't in its
- * own `providers` (v1.1 EC-8 SHOULD TEST — pin register-time validation).
+ * own `providers` — this pins register-time validation.
  */
 export class InvalidExportError extends Error {
   override readonly name = "InvalidExportError" as const;

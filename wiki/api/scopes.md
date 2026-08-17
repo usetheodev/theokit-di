@@ -15,7 +15,7 @@ sources:
 ---
 
 A scope decides how long a resolved instance lives and who shares it. There are
-three, recorded as ADR D5.[^types]
+three.[^types]
 
 ```typescript
 export const Scope = {

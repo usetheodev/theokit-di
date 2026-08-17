@@ -108,7 +108,7 @@ export function readOptionalFlags(target: ClassConstructor): ReadonlySet<number>
 /**
  * Read `@Injectable({ scope })` metadata. Returns `undefined` if the class
  * was not decorated. The container then checks `isInjectable()` (or treats
- * it as a registration error per v1.1 EC-1).
+ * it as a registration error).
  */
 export function readInjectableMetadata(target: ClassConstructor): InjectableMetadata | undefined {
   if (!hasReflectMetadata()) return undefined;
@@ -129,7 +129,7 @@ export function isInjectable(target: ClassConstructor): boolean {
  * Detect primitive wrapper types (`Number`, `String`, `Boolean`, `Object`).
  * TS emits these for primitive constructor parameters and for interface
  * parameters that can't be resolved at runtime. The container uses this
- * to emit better errors than "TokenNotFoundError: Number" (v1.1 EC-6).
+ * to emit better errors than "TokenNotFoundError: Number".
  */
 const PRIMITIVE_WRAPPERS: ReadonlySet<unknown> = new Set([
   Number,

@@ -49,7 +49,7 @@ Peer dependencies
 
 The SDK is consumed as a published npm dependency, not a workspace link, so the SDK
 and the DI ecosystem can move on separate cadences. Decorators are an optional DX
-layer — ADR D431 revoked the earlier rule that made them mandatory.[^rootreadme]
+layer — the earlier rule that made them mandatory was revoked.[^rootreadme]
 
 # The three load-bearing exports
 

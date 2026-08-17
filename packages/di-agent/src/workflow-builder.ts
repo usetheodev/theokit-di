@@ -3,7 +3,7 @@
  * `@theokit/sdk` `Workflow`.
  *
  * This is the materializer/bridge for the decorator-driven workflow authoring
- * surface (cross-val Gap 2). It COMPOSES the existing `Workflow` engine — it
+ * surface. It COMPOSES the existing `Workflow` engine — it
  * adds no orchestration logic of its own (same principle as `createSquad`).
  * Steps are topologically ordered by their single `after` dependency into a
  * linear `Workflow.then(...)` chain; each step's return value is threaded into
@@ -14,6 +14,7 @@
  */
 
 import { fn, Workflow } from "@theokit/sdk/workflow";
+import type { DecoratedClass } from "./decorators/decorated-class.js";
 import { readStepMetadata, type StepMetadata } from "./decorators/step.js";
 import { readWorkflowMetadata } from "./decorators/workflow.js";
 
@@ -32,7 +33,7 @@ interface ResolvedStep {
  *   unknown step, or the `after` graph contains a cycle.
  */
 export function buildWorkflow(instance: object): Workflow {
-  const ctor = instance.constructor as abstract new (...args: never) => unknown;
+  const ctor = instance.constructor as DecoratedClass;
   const meta = readStepMetadata(ctor);
   if (meta.size === 0) {
     throw new Error(`buildWorkflow: class "${instance.constructor.name}" has no @Step methods`);
@@ -42,7 +43,7 @@ export function buildWorkflow(instance: object): Workflow {
   validateAfterTargets(steps);
   const ordered = topoSort(steps);
 
-  const name = readWorkflowMetadata(instance.constructor as Function)?.name ?? "workflow";
+  const name = readWorkflowMetadata(instance.constructor as DecoratedClass)?.name ?? "workflow";
   let builder = Workflow.create({ name });
   for (const s of ordered) {
     builder = builder.then(fn(s.id, (input: unknown) => s.run(input)));

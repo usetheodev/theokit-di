@@ -124,7 +124,7 @@ await container.runInRequest(async () => {
 });
 ```
 
-Recorded as edge case v1.2 EC-15: middleware must wrap the *entire* handler, and the
+The constraint is exact: middleware must wrap the *entire* handler, and the
 handler must not escape the Promise chain through a raw `setTimeout` or `setImmediate`.
 
 The same constraint governs [@Transactional](/api/transactional.md) and

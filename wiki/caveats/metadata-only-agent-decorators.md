@@ -65,7 +65,7 @@ package is the same idea taken one step further: a runtime can read `@Tool` meta
 while depending only on the DI package.
 
 Two facts make the direction explicit. The monorepo README states decorators are an
-**optional** DX layer and that ADR D431 revoked the rule making them
+**optional** DX layer, and that the rule making them mandatory was revoked
 mandatory.[^rootreadme] And `buildWorkflow` is described in its own header as the
 bridge layer — the one module that, unlike the metadata-only decorators, imports the
 SDK peer dependency.[^builder]

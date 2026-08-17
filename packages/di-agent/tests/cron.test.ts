@@ -49,7 +49,7 @@ describe("@Cron", () => {
     }
     expect(readCronMetadata(A)?.methodKey).toBe("run");
   });
-  it("stores invalid expression as-is (EC-1)", () => {
+  it("stores invalid expression as-is", () => {
     class A {
       @Cron({ schedule: "not-a-cron" }) run(): void {}
     }

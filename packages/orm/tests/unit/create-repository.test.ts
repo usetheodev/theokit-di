@@ -1,5 +1,5 @@
 /**
- * M7-7 — non-DI `createRepository(db, table)` factory.
+ * The non-DI `createRepository(db, table)` factory.
  *
  * Proves the factory yields a working Repository with NO DI container,
  * decorators, or reflect-metadata — only a raw drizzle `db` + `table`
@@ -31,7 +31,7 @@ afterEach(() => {
   sqlite.close();
 });
 
-describe("createRepository (M7-7)", () => {
+describe("createRepository", () => {
   it("returns a Repository instance without any DI", () => {
     const db = drizzle(sqlite, { schema: { users } });
     const repo = createRepository(db, users);

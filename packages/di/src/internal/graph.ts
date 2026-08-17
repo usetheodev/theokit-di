@@ -2,7 +2,7 @@
  * Dependency-graph helpers — used by `container.analyze()` for debug + by
  * the registration phase (future) for proactive cycle detection.
  *
- * Per v1.2 EC-11: iterative DFS, NOT recursive, so large graphs (100+ nodes)
+ * Iterative DFS, NOT recursive, so large graphs (100+ nodes)
  * with multiple cycles don't blow the call stack.
  */
 

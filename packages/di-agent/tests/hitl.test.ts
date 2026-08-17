@@ -85,7 +85,7 @@ describe("@Hitl", () => {
     expect(readHitlMetadata(B)?.tools).toEqual(["b"]);
   });
 
-  it("works on sync method (EC-3)", () => {
+  it("works on sync method", () => {
     class A {
       @Hitl({ tools: ["exec"] })
       approveSync(_name: string): boolean {

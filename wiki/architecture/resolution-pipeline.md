@@ -45,7 +45,7 @@ flowchart TD
 
 # Why cycle detection precedes the cache
 
-This is edge case EC-R2-1. In the asynchronous path a cycle would otherwise hit the
+In the asynchronous path a cycle would otherwise hit the
 in-flight Promise left by its own outer resolve, and await a Promise that can only
 settle after the awaiting call returns — a deadlock rather than an error.[^container]
 
@@ -54,7 +54,7 @@ synchronous path uses the same order for symmetry.
 
 # Why the container freezes on first resolve
 
-Edge case EC-R2-5. `hasResolved` is set before any work happens, and every subsequent
+`hasResolved` is set before any work happens, and every subsequent
 `register()` throws unless `allowDynamicRegistration` was opted into.[^container]
 
 Without it, a singleton constructed under one set of registrations coexists with a
@@ -94,7 +94,7 @@ values — cheap, because they are cache hits.
 
 # The single-flight guarantee
 
-Edge case EC-R3-1, and the subtlest ordering in the file. The synchronous path caches
+The subtlest ordering in the file. The synchronous path caches
 an in-flight Promise **before** throwing:[^container]
 
 ```typescript
@@ -111,8 +111,8 @@ fallback finds no cache entry, calls the factory a second time, and the first in
 is orphaned — never tracked, so `dispose()` never reaches it. Every resolve would create
 and leak one extra instance.
 
-The rejection handler deletes the entry rather than caching the rejected Promise
-(EC-R2-2), so a transient failure does not poison the token for the container's
+The rejection handler deletes the entry rather than caching the rejected Promise,
+so a transient failure does not poison the token for the container's
 lifetime.
 
 # Scope-aware caching

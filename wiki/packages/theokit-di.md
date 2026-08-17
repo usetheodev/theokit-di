@@ -86,8 +86,7 @@ naming the missing flag.[^readme]
 The package is intentionally TypeScript-only. A DI container is a language-specific
 runtime construct, so the cross-language story of the theokit ecosystem lives in the
 contract layer instead — OpenAPI from `@theokit/http`, and SQL migrations plus
-JSON Schema from [schema export](/api/schema-export.md). This is recorded as
-ADR D11 of the implementation plan.[^readme]
+JSON Schema from [schema export](/api/schema-export.md).[^readme]
 
 # Consumers
 
@@ -98,16 +97,15 @@ full dependency picture is in [package topology](/architecture/package-topology.
 
 # Known design trade-offs
 
-The `Container` class is 830 lines, above the 500-line heuristic file budget, and a
-2026-06-06 architecture audit flagged it as principle violation PV#10 (SRP, INFO
-severity). The team's recorded decision is to keep the class whole — it is the
-single point of truth for resolution, lifecycle, metadata reading, alias resolution,
-request-scope propagation and disposal — and to refactor at the method level
-instead, tracked as ADR D422.[^changelog]
+The `Container` class is 830 lines, above the 500-line heuristic file budget. The
+recorded decision is to keep the class whole — it is the single point of truth for
+resolution, lifecycle, metadata reading, alias resolution, request-scope propagation
+and disposal — and to hold the complexity budget at the method level instead, with
+Extract Method.[^changelog]
 
 A type-only import cycle between `container.ts` and `internal/module-loader.ts` was
 broken in `0.1.1` by introducing the narrow `ModuleRegistrar` interface in the leaf
-`types.ts` module (arch-review ADR 0001). `Container` satisfies it structurally, so
+`types.ts` module. `Container` satisfies it structurally, so
 there was no behaviour change.[^changelog]
 
 [^pkg]: `@theokit/di` package manifest

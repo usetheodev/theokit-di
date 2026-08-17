@@ -57,13 +57,13 @@ The coupling is also deliberately thin. Only
 structural so it never names an SDK type.
 
 Direction of the contract matters here: decorators are an **optional** DX layer. ADR
-D431 revoked an earlier rule that made them mandatory, so the SDK does not require this
+An earlier rule that made them mandatory was revoked, so the SDK does not require this
 repository at all.[^rootreadme]
 
 # Provenance of the monorepo
 
-These three packages were extracted from `theokit-sdk` on 2026-06-18 under the plan
-`monorepo-cohesion-split`, using `git filter-repo` to preserve full history. The
+These three packages were extracted from `theokit-sdk` on 2026-06-18 using
+`git filter-repo`, carrying their commits across. The
 motivation was cadence: the SDK stays a cohesive Agent-AI harness while the DI and IoC
 concerns evolve on their own schedule. npm names and versions were unchanged by the
 move.[^rootchangelog]

@@ -10,7 +10,7 @@ export interface InjectableOptions {
 
 /**
  * Marks a class as DI-managed. Without this decorator, the container
- * rejects the class at registration time (per v1.1 EC-1).
+ * rejects the class at registration time.
  *
  * @example
  *   @Injectable()

@@ -30,7 +30,7 @@ function createRepository<T extends Table>(db: unknown, table: T): Repository<T>
 
 The constructor takes no container and no decorators. `createRepository` exists to
 make that non-DI path explicit and discoverable, so plain CRUD needs neither
-`@theokit/di` nor `reflect-metadata` — added in `0.1.0` as M7-7.[^changelog]
+`@theokit/di` nor `reflect-metadata` — added in `0.1.0`.[^changelog]
 
 # Methods
 
