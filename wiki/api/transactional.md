@@ -34,8 +34,10 @@ class TransferService {
 ```
 
 Before using it, read
-[@Transactional has no DI binding path](/caveats/transactional-di-binding.md). The
-decorator works, but the wiring its own documentation describes is not implemented.
+[@Transactional needs its DataSource bound explicitly](/caveats/transactional-di-binding.md).
+The decorator works, but nothing binds the data source for you — you call
+`bindDataSourceToInstance`, from a `@PostConstruct` hook when the class is
+container-managed.
 
 # How propagation works
 

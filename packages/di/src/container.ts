@@ -10,6 +10,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 
 import {
+  AsyncPostConstructInSyncResolveError,
   AsyncProviderInSyncResolveError,
   ContainerDisposedError,
   ContainerFrozenError,
@@ -29,6 +30,8 @@ import {
   readInjectTokens,
   readOptionalFlags,
   readParamTypes,
+  readPostConstruct,
+  readPreDestroy,
 } from "./internal/metadata.js";
 import { loadModule } from "./internal/module-loader.js";
 import type {
@@ -51,12 +54,32 @@ interface RequestStore {
    * deleted.
    */
   readonly cache: Map<Token, unknown>;
-  /** Instances created during this request — disposed when request ends. */
-  readonly instances: Disposable[];
+  /** Instances created during this request — torn down when the request ends. */
+  readonly instances: TrackedInstance[];
 }
 
 interface Disposable {
   dispose(): void | Promise<void>;
+}
+
+/**
+ * An instance the container will tear down: it implements `Disposable`, declares a
+ * `@PreDestroy` hook, or both. Wider than `Disposable` because a class whose only
+ * teardown is the decorator has no `dispose()` to detect.
+ */
+type TrackedInstance = object;
+
+/**
+ * Marks a {@link ResolutionContext} created by the asynchronous path.
+ *
+ * The two contexts are otherwise identical, but `@PostConstruct` has to behave
+ * differently in each: `resolveAsync` can await an async hook, `resolve` cannot. A
+ * symbol keeps the distinction off the public `ResolutionContext` type.
+ */
+const ASYNC_CONTEXT = Symbol("theokit.di.asyncContext");
+
+function isAsyncContext(ctx: ResolutionContext): boolean {
+  return (ctx as unknown as Record<symbol, unknown>)[ASYNC_CONTEXT] === true;
 }
 
 interface Registration<T = unknown> {
@@ -98,7 +121,7 @@ interface Registration<T = unknown> {
 export class Container {
   private readonly registrations = new Map<Token, Registration>();
   private readonly singletonCache = new Map<Token, unknown>();
-  private readonly singletonInstances: Disposable[] = [];
+  private readonly singletonInstances: TrackedInstance[] = [];
   private readonly requestStorage = new AsyncLocalStorage<RequestStore>();
   private readonly options: Required<ContainerOptions>;
   private hasResolved = false;
@@ -476,10 +499,17 @@ export class Container {
 
     const syncResult = this.tryResolveSync(target, paramTypes, injectTokens, optionalFlags, ctx);
     if ("args" in syncResult) {
-      return new target(...syncResult.args);
+      const instance = new target(...syncResult.args);
+      // Every dependency resolved synchronously, but the caller may still be on the
+      // async path — where an async `@PostConstruct` can be awaited rather than refused.
+      return isAsyncContext(ctx)
+        ? runPostConstructAsync(target, instance)
+        : runPostConstructSync(target, instance);
     }
 
-    return this.resolveAllAsync(target, paramTypes, injectTokens, optionalFlags, ctx);
+    return this.resolveAllAsync(target, paramTypes, injectTokens, optionalFlags, ctx).then(
+      (instance) => runPostConstructAsync(target, instance),
+    );
   }
 
   /**
@@ -742,7 +772,9 @@ export class Container {
   }
 
   private trackInstance(value: unknown, scope: Scope): void {
-    if (!isDisposable(value)) return;
+    // A class whose only teardown is `@PreDestroy` has no `dispose()`, so tracking on
+    // `isDisposable` alone would silently skip it — the bug behind #5.
+    if (!isDisposable(value) && !hasPreDestroy(value)) return;
     if (scope === Scope.SINGLETON) {
       this.singletonInstances.push(value);
       return;
@@ -776,31 +808,34 @@ export class Container {
   }
 
   private createContextAsync(path: ReadonlyArray<Token>): ResolutionContext {
-    return {
+    const ctx: ResolutionContext = {
       path,
       resolve: <U>(t: Token<U>): U => this.resolveInContext(t, this.createContext(path)),
       resolveAsync: <U>(t: Token<U>): Promise<U> =>
         this.resolveAsyncInContext(t, this.createContextAsync(path)),
     };
+    return Object.assign(ctx, { [ASYNC_CONTEXT]: true });
   }
 
   // ─────────────────────────────────────────────────────────────────────
   // Internal: disposal
   // ─────────────────────────────────────────────────────────────────────
 
-  private async disposeInstances(instances: Disposable[]): Promise<void> {
+  private async disposeInstances(instances: TrackedInstance[]): Promise<void> {
     const errors: unknown[] = [];
     // Reverse construction order — dispose dependents before deps.
     for (let i = instances.length - 1; i >= 0; i -= 1) {
       const instance = instances[i];
       if (instance === undefined) continue;
       try {
+        // `@PreDestroy` runs BEFORE `dispose()`, as its docstring promises.
+        await callPreDestroy(instance);
         const asAsync = (instance as { [Symbol.asyncDispose]?: () => unknown })[
           Symbol.asyncDispose
         ];
         if (typeof asAsync === "function") {
           await asAsync.call(instance);
-        } else {
+        } else if (isDisposable(instance)) {
           await instance.dispose();
         }
       } catch (err) {
@@ -820,4 +855,72 @@ function isDisposable(value: unknown): value is Disposable {
   if (typeof candidate.dispose === "function") return true;
   if (typeof candidate[Symbol.asyncDispose] === "function") return true;
   return false;
+}
+
+/**
+ * Resolve the `@PostConstruct` method of `target` on `instance`, if it declared one.
+ *
+ * Returns whatever the hook returned so the two call sites can decide what to do with a
+ * Promise — awaiting it is only possible on the async path.
+ */
+function callPostConstruct<T>(target: ClassConstructor<T>, instance: T): unknown {
+  const hook = readPostConstruct(target);
+  if (hook === undefined) return undefined;
+  const method = (instance as Record<string | symbol, unknown>)[hook];
+  if (typeof method !== "function") return undefined;
+  return (method as (this: T) => unknown).call(instance);
+}
+
+/**
+ * Run `@PostConstruct` on the synchronous resolution path.
+ *
+ * An async hook cannot be awaited here, and handing back an object whose initialiser has
+ * not finished is worse than failing: the caller gets something that looks ready and is
+ * not. So this refuses, and names the method that has to change.
+ */
+function runPostConstructSync<T>(target: ClassConstructor<T>, instance: T): T {
+  const returned = callPostConstruct(target, instance);
+  if (isThenable(returned)) {
+    throw new AsyncPostConstructInSyncResolveError(target.name, String(readPostConstruct(target)));
+  }
+  return instance;
+}
+
+/** Run `@PostConstruct` on the asynchronous path, awaiting the hook when it returns a Promise. */
+async function runPostConstructAsync<T>(target: ClassConstructor<T>, instance: T): Promise<T> {
+  const returned = callPostConstruct(target, instance);
+  if (isThenable(returned)) await returned;
+  return instance;
+}
+
+/**
+ * Run the `@PreDestroy` method of `instance`, if its class declared one.
+ *
+ * Awaited unconditionally: `await` on a non-Promise is a no-op, and disposal is already
+ * an async path, so a synchronous hook costs nothing here.
+ */
+async function callPreDestroy(instance: object): Promise<void> {
+  const ctor = instance.constructor as ClassConstructor | undefined;
+  if (typeof ctor !== "function") return;
+  const hook = readPreDestroy(ctor);
+  if (hook === undefined) return;
+  const method = (instance as Record<string | symbol, unknown>)[hook];
+  if (typeof method !== "function") return;
+  await (method as (this: object) => unknown).call(instance);
+}
+
+/** Whether the class declares a `@PreDestroy` hook — used to decide whether to track it. */
+function hasPreDestroy(value: unknown): value is TrackedInstance {
+  if (value === null || typeof value !== "object") return false;
+  const ctor = (value as { constructor?: unknown }).constructor;
+  if (typeof ctor !== "function") return false;
+  return readPreDestroy(ctor as ClassConstructor) !== undefined;
+}
+
+function isThenable(value: unknown): value is PromiseLike<unknown> {
+  return (
+    value !== null &&
+    (typeof value === "object" || typeof value === "function") &&
+    typeof (value as PromiseLike<unknown>).then === "function"
+  );
 }

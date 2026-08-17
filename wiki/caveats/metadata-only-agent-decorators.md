@@ -65,8 +65,7 @@ package is the same idea taken one step further: a runtime can read `@Tool` meta
 while depending only on the DI package.
 
 Two facts make the direction explicit. The monorepo README states decorators are an
-**optional** DX layer, and that the rule making them mandatory was revoked
-mandatory.[^rootreadme] And `buildWorkflow` is described in its own header as the
+**optional** DX layer, and that the rule making them mandatory was revoked.[^rootreadme] And `buildWorkflow` is described in its own header as the
 bridge layer — the one module that, unlike the metadata-only decorators, imports the
 SDK peer dependency.[^builder]
 
@@ -77,15 +76,16 @@ SDK peer dependency.[^builder]
 - Expect no validation. `@Cron({ schedule: "not a cron string" })` stores the string
   as-is — nothing parses it, so a malformed value surfaces wherever it is eventually
   consumed, not at decoration.
-- Watch the single-object decorators. `@Hitl` and `@Cron` store one object per class,
-  so a second decorated method silently overwrites the first, as
-  [agent decorators](/api/agent-decorators.md) records.
+# A defect that was inside this design
 
-# Tracked as
+`@Cron` and `@Hitl` used to store one object per class, so decorating a second method
+silently discarded the first — a class with two scheduled routines quietly lost one,
+with no error and no warning. Both are method decorators, like `@Step`, and both now
+accumulate per method the way the other fourteen do.
 
-The design itself is intentional and is not filed. One objective defect inside it is:
-the `@Hitl` / `@Cron` silent-overwrite, filed as
-[usetheodev/theokit-di#6](https://github.com/usetheodev/theokit-di/issues/6).
+That changes their reader shape: `readCronMetadata` and `readHitlMetadata` return a
+`ReadonlyMap` keyed by method name, not a single object or `undefined`. Filed and fixed
+as [usetheodev/theokit-di#6](https://github.com/usetheodev/theokit-di/issues/6).
 
 # Reading the metadata yourself
 
@@ -95,11 +95,12 @@ Every reader is exported, so building your own consumer is a supported path:
 import { readToolMetadata, readCronMetadata } from "@theokit/di-agent";
 
 const tools = readToolMetadata(MyAgentClass);   // Map<string|symbol, ToolOptions>
-const cron = readCronMetadata(MyAgentClass);    // CronMetadata | undefined
+const cron = readCronMetadata(MyAgentClass);    // Map<string|symbol, CronMetadata>
 ```
 
-Map-shaped readers return an empty `Map` when the decorator was never applied;
-object-shaped readers return `undefined`.[^decorators]
+Readers for property and method decorators return an empty `Map` when the decorator was
+never applied. The four class decorators — `@Auth`, `@AutoSummarize`, `@EvalDecorator`
+and `@Workflow` — are singular by nature and return `undefined`.[^decorators]
 
 [^decorators]: `@theokit/di-agent` decorator modules
 [^barrel]: Public barrel of `@theokit/di-agent`

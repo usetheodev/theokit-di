@@ -7,15 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `DecoratedClass` — the constructor type the decorator reader helpers accept, exported so consumers can name it.
+
 ### Changed
 
 - `repository`, `homepage` and `bugs` now point at `usetheodev/theokit-di`. They pointed at `usetheo/theokit-sdk`, so every "Repository" and "Report issues" link on npm led to a project that does not host this package.
 - `readAuthMetadata`, `readEvalDecoratorMetadata` and `readWorkflowMetadata` now declare their parameter as `DecoratedClass` rather than `Function`. `Function` is the widest callable type there is, so it documented nothing and admitted values that are not classes. Any class you already passed still type-checks.
 - JSDoc and comments no longer cite plan tasks or edge-case identifiers that exist in no repository a reader can reach.
-
-### Added
-
-- `DecoratedClass` — the constructor type the decorator reader helpers accept, exported so consumers can name it.
+- **Breaking:** `readCronMetadata` and `readHitlMetadata` return a `ReadonlyMap` keyed by method name instead of a single object or `undefined`. `@Cron` and `@Hitl` kept one object per class, so decorating a second method silently discarded the first — a class with two scheduled routines quietly lost one. Both now accumulate per method, like the other fourteen decorators. Migration: `readCronMetadata(C)?.schedule` becomes `readCronMetadata(C).get("methodName")?.schedule`, and an undecorated class yields an empty map rather than `undefined` (#6).
 
 ## 0.2.0
 

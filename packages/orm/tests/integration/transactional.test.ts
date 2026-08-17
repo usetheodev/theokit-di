@@ -100,12 +100,14 @@ describe("@Transactional", () => {
     expect(captured).toBeDefined();
   });
 
-  describe("non-DI-managed instance", () => {
-    it("throws OrmConfigurationError with actionable message", async () => {
+  describe("instance with no DataSource bound", () => {
+    it("throws OrmConfigurationError naming the call that fixes it", async () => {
       const svc = new CommitService();
       // intentionally NOT binding DataSource
       await expect(svc.doWork("op")).rejects.toThrow(OrmConfigurationError);
-      await expect(svc.doWork("op")).rejects.toThrow(/DI-managed/);
+      // The message used to claim the container binds this automatically, which it
+      // never did (#4). It now names the one call that actually does.
+      await expect(svc.doWork("op")).rejects.toThrow(/bindDataSourceToInstance/);
     });
   });
 

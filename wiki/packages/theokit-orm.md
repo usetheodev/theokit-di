@@ -66,7 +66,7 @@ Transactions
 : `@Transactional()` wraps a method in `db.transaction` and propagates the handle so
   repositories transparently join it. See [@Transactional](/api/transactional.md) and
   the binding caveat in
-  [@Transactional has no DI binding path](/caveats/transactional-di-binding.md).
+  [@Transactional needs its DataSource bound explicitly](/caveats/transactional-di-binding.md).
 
 Schema export
 : `exportSchemas(schema)` emits JSON Schema 7 from Drizzle tables, so Python,

@@ -9,6 +9,7 @@ export { Optional } from "./decorators/optional.js";
 export { Primary } from "./decorators/primary.js";
 export { Qualifier } from "./decorators/qualifier.js";
 export {
+  AsyncPostConstructInSyncResolveError,
   AsyncProviderInSyncResolveError,
   ContainerDisposedError,
   ContainerFrozenError,

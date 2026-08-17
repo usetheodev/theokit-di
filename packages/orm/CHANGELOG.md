@@ -7,9 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `bindDataSourceToInstance` and `TransactionalOptions` are exported from the package entry point. `bindDataSourceToInstance` is what the `@Transactional` error message tells you to call, and it was not reachable from the published package, so following that instruction did not compile (#4).
+
 ### Changed
 
 - `repository`, `homepage` and `bugs` now point at `usetheodev/theokit-di`. They pointed at `usetheo/theokit-sdk`, so every "Repository" and "Report issues" link on npm led to a project that does not host this package.
+- `@Transactional` no longer claims the container binds its DataSource automatically. Nothing ever did. The error message now names `bindDataSourceToInstance`, the one call that fixes it, and the docs show the container recipe: inject `ORM_DATA_SOURCE_TOKEN` and bind in a `@PostConstruct` hook (#4).
+- **Breaking:** `@Transactional({ isolationLevel })` was accepted and silently ignored — the options parameter was never read. The level is now passed to the driver, and rejected with an `OrmConfigurationError` on `sqlite`, which has no per-transaction isolation level to set. Code that passed a level on sqlite and appeared to work was never getting one; it now fails instead of pretending (#4).
 
 ## [0.1.0] - 2026-06-22
 

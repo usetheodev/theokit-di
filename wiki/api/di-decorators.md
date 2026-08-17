@@ -1,7 +1,7 @@
 ---
 type: API Surface
 title: Container decorators
-description: The four @theokit/di decorators the container actually reads — @Injectable, @Inject, @Optional and @Module.
+description: The @theokit/di decorators the container reads — @Injectable, @Inject, @Optional, @Module, and the @PostConstruct / @PreDestroy lifecycle hooks.
 resource: packages/di/src/decorators
 tags: [di, decorators, api]
 generated: { by: claude-code/claude-opus-5, at: 2026-08-06T15:00:00Z }
@@ -24,10 +24,14 @@ sources:
   - id: container
     resource: packages/di/src/container.ts
     title: Container implementation
+  - id: lifecycle
+    resource: packages/di/src/decorators/lifecycle.ts
+    title: "@PostConstruct / @PreDestroy implementation"
 ---
 
-Four decorators are read by [`Container`](/api/container.md) at runtime. Four more are
-exported but inert — those are catalogued separately in
+Six decorators are read by [`Container`](/api/container.md) at runtime: the four wiring
+ones below, plus the two lifecycle hooks. Two more — `@Primary` and `@Qualifier` — are
+exported but inert, and are catalogued separately in
 [inert container decorators](/caveats/inert-di-decorators.md).
 
 # @Injectable(options?)
@@ -121,9 +125,49 @@ to v2.[^loader]
 Treat `exports` as a statement of intent your team reads, not a boundary the runtime
 guards.
 
+# @PostConstruct
+
+Marks the method to call once the instance is built and every constructor dependency is
+injected. Runs once per instance, so a SINGLETON initialises once however often it is
+resolved, and a TRANSIENT once per construction.[^lifecycle]
+
+```typescript
+@Injectable()
+class CacheService {
+  private cache!: Map<string, unknown>;
+
+  @PostConstruct
+  async init() {
+    this.cache = await loadCacheFromRedis();
+  }
+}
+```
+
+An async hook is awaited by `resolveAsync`. The synchronous `resolve()` cannot await it,
+and rather than hand back an object whose initialiser is still running it throws
+`AsyncPostConstructInSyncResolveError`, naming the class and method. A hook that throws
+propagates for the same reason: a half-initialised instance is worse than a failure at
+the point of construction.[^container]
+
+# @PreDestroy
+
+Marks the method to call when the instance is torn down — `container.dispose()` for a
+SINGLETON, the end of `runInRequest()` for a REQUEST-scoped one.[^lifecycle]
+
+It runs **before** `dispose()` when a class has both, and is awaited if it returns a
+Promise. A class needs no `dispose()` at all: declaring this hook is enough for the
+container to track the instance for teardown. If one hook throws, the remaining
+instances are still torn down and the failures surface together as an
+`AggregateError`.[^container]
+
+Both hooks were inert until the change recorded in
+[inert container decorators](/caveats/inert-di-decorators.md); the entry there sets out
+what moved and what did not.
+
 [^injectable]: `@Injectable` implementation
 [^inject]: `@Inject` implementation
 [^optional]: `@Optional` implementation
 [^module]: `@Module` implementation
 [^loader]: Module loader
 [^container]: Container implementation
+[^lifecycle]: `@PostConstruct` / `@PreDestroy` implementation
