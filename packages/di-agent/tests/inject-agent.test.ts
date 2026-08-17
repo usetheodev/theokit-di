@@ -4,7 +4,8 @@ import { describe, expect, it } from "vitest";
 import { AGENT_TOKEN, createAgentProvider, InjectAgent } from "../src/index.js";
 
 // ─────────────────────────────────────────────────────────────────────
-// T4.1 — di-agent unit tests (mock Agent — real-LLM test is T4.2)
+// di-agent unit tests against a mock Agent. The real-LLM counterpart lives in
+// tests/integration/real-agent.test.ts.
 // ─────────────────────────────────────────────────────────────────────
 
 /**

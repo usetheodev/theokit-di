@@ -15,7 +15,7 @@ import {
 } from "../src/index.js";
 
 // ─────────────────────────────────────────────────────────────────────
-// T1.1 — Container core: bind/resolve/scopes/Promise-lock
+// Container core: bind/resolve/scopes/Promise-lock
 // ─────────────────────────────────────────────────────────────────────
 
 describe("Container.register + resolve (ClassProvider)", () => {
@@ -155,7 +155,7 @@ describe("Container scopes — SINGLETON / TRANSIENT / REQUEST", () => {
   });
 });
 
-describe("Container — v1.1 EC-1 (imperative + declarative @Injectable validation)", () => {
+describe("Container — imperative and declarative @Injectable validation", () => {
   it("imperative register rejects undecorated class with MissingInjectableError", () => {
     class Plain {}
     const c = new Container();
@@ -176,7 +176,7 @@ describe("Container — v1.1 EC-1 (imperative + declarative @Injectable validati
   });
 });
 
-describe("Container — v1.1 EC-2 + v1.2 EC-R2-1 + EC-R2-2 (Promise-lock cache)", () => {
+describe("Container — Promise-lock cache", () => {
   it("REQUEST scope parallel resolveAsync returns the SAME instance (Promise-lock)", async () => {
     let factoryCount = 0;
     const c = new Container();
@@ -200,7 +200,7 @@ describe("Container — v1.1 EC-2 + v1.2 EC-R2-1 + EC-R2-2 (Promise-lock cache)"
     expect(factoryCount).toBe(1);
   });
 
-  it("EC-R2-1: async A→B→A cycle throws CyclicDependencyError instead of deadlock", async () => {
+  it("async A→B→A cycle throws CyclicDependencyError instead of deadlock", async () => {
     const TOKEN_A = "A";
     const TOKEN_B = "B";
     const c = new Container();
@@ -222,7 +222,7 @@ describe("Container — v1.1 EC-2 + v1.2 EC-R2-1 + EC-R2-2 (Promise-lock cache)"
     );
   });
 
-  it("EC-R2-2: rejected factory does NOT poison the cache (retry within same request succeeds)", async () => {
+  it("rejected factory does NOT poison the cache (retry within same request succeeds)", async () => {
     let attempt = 0;
     const c = new Container();
     c.register({
@@ -271,7 +271,7 @@ describe("Container — sync cycle detection", () => {
   });
 });
 
-describe("Container — v1.2 EC-R2-5 (freeze after first resolve)", () => {
+describe("Container — freeze after first resolve", () => {
   it("register() after first resolve() throws ContainerFrozenError by default", () => {
     @Injectable()
     class Foo {}
@@ -320,7 +320,7 @@ describe("Container — Optional decorator", () => {
   });
 });
 
-describe("Container — class with primitive constructor param (v1.1 EC-6)", () => {
+describe("Container — class with primitive constructor param", () => {
   it("emits an actionable error when a primitive type is used as a token", () => {
     @Injectable()
     class WithPrimitive {

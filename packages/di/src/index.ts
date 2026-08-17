@@ -1,6 +1,4 @@
-// Public surface of `@theokit/di`. See README.md for usage examples and
-// `.claude/knowledge-base/plans/usetheo-di-v1-implementation-plan.md` for
-// the ADRs behind each design choice.
+// Public surface of `@theokit/di`. See README.md for usage examples.
 
 export { Container } from "./container.js";
 export { Inject } from "./decorators/inject.js";

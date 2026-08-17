@@ -171,7 +171,7 @@ export class Repository<T extends Table> {
 }
 
 /**
- * M7-7 — non-DI factory for {@link Repository}. The `Repository` constructor is
+ * Non-DI factory for {@link Repository}. The `Repository` constructor is
  * already DI-free (`new Repository(db, table)`); this factory makes the non-DI
  * path explicit and discoverable, so consumers do NOT need `@theokit/di`,
  * decorators, or `reflect-metadata` for plain CRUD — only `@Transactional`

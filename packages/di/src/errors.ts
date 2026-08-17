@@ -41,9 +41,9 @@ export class TokenNotFoundError extends Error {
 
 /**
  * Thrown when a resolution chain contains a cycle (A → B → A).
- * Per ADR D7: detected at resolve-time (not register-time).
+ * Detected at resolve-time, not register-time.
  *
- * v1.2 EC-R2-1: cycle check happens BEFORE cache lookup in resolveAsync
+ * The cycle check happens BEFORE cache lookup in resolveAsync
  * to prevent infinite Promise await deadlocks on async REQUEST-scoped
  * cycles.
  */
@@ -88,7 +88,7 @@ export class ScopeViolationError extends Error {
  * `design:paramtypes` metadata that the container needs to auto-resolve
  * constructor parameters.
  *
- * v1.1 EC-1: validateClassProvider() is called by BOTH the declarative
+ * validateClassProvider() is called by BOTH the declarative
  * `providers: []` path AND the imperative `container.register()` path.
  */
 export class MissingInjectableError extends Error {
@@ -114,7 +114,7 @@ export class ContainerDisposedError extends Error {
 
 /**
  * Thrown when `register()` or `registerModule()` is called AFTER the first
- * `resolve()` has materialized a singleton. Per ADR D7 + EC-R2-5, the
+ * `resolve()` has materialized a singleton. The
  * container freezes after first resolve unless
  * `allowDynamicRegistration: true` was passed to the constructor.
  */

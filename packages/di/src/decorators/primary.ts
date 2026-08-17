@@ -18,6 +18,6 @@ import { METADATA_KEYS } from "../internal/metadata.js";
  * // Without @Qualifier, StripePayments is resolved (it's @Primary)
  * ```
  */
-export function Primary(target: Function): void {
+export function Primary(target: abstract new (...args: never) => unknown): void {
   Reflect.defineMetadata(METADATA_KEYS.PRIMARY, true, target);
 }

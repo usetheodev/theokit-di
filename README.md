@@ -1,6 +1,6 @@
 # theokit-di
 
-The dependency-injection ecosystem for the Theo platform — a NestJS-flavoured IoC container, agent-aware DI, and a DI-driven ORM. Extracted from `theokit-sdk` (2026-06-18, plan `monorepo-cohesion-split`) so the SDK stays a cohesive Agent-AI **Harness** and these DI/IoC concerns evolve on their own cadence.
+The dependency-injection ecosystem for the Theo platform — a NestJS-flavoured IoC container, agent-aware DI, and a DI-driven ORM. Split out of `theokit-sdk` on 2026-06-18 so the SDK stays a cohesive Agent-AI **Harness** while these DI/IoC concerns evolve on their own cadence.
 
 ## Packages
 
@@ -12,7 +12,7 @@ The dependency-injection ecosystem for the Theo platform — a NestJS-flavoured 
 
 ## Relationship to `@theokit/sdk`
 
-`@theokit/di-agent` consumes `@theokit/sdk` as a **published npm dependency** (`^1.9.0`), not a workspace link. Decorators are an OPTIONAL DX layer — the SDK itself no longer requires them (ADR D431, revoked the decorators-mandatory rule).
+`@theokit/di-agent` consumes `@theokit/sdk` as a **published npm dependency** (`^1.9.0`), not a workspace link. Decorators are an OPTIONAL DX layer: the SDK itself does not require them.
 
 ## Develop
 
@@ -26,4 +26,8 @@ pnpm test
 
 ## History
 
-Extracted with full git history via `git filter-repo` from `usetheo/theokit-sdk`.
+The three packages were extracted from `theokit-sdk` with `git filter-repo`, carrying their
+commits across. Those commit messages were rewritten on 2026-08-17 so each one describes only
+the files in its own commit — the extraction had preserved the original messages verbatim, and
+many of them documented parts of `theokit-sdk` that never came with the packages. The trees are
+unchanged.

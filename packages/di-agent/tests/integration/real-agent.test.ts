@@ -1,13 +1,11 @@
 /**
- * T4.2 — Real-LLM integration test (per the `real-llm-validation.md`
- * inviolable rule). Calls the actual `@theokit/sdk` `Agent.create()` +
- * `Agent.send()` against a real provider, injected via REQUEST scope.
+ * Real-LLM integration test. Calls the actual `@theokit/sdk` `Agent.create()`
+ * and `Agent.send()` against a real provider, injected via REQUEST scope.
  *
  * Env-gated: skips if `OPENROUTER_API_KEY` is missing. CI without the key
  * shows an honest skip with reason.
  *
- * v1.2 EC-10 SHOULD TEST — reuse the retry-on-empty pattern from
- * `ollama-end-to-end.test.ts` so cold-warmup empty content doesn't flake
+ * Reuses the retry-on-empty pattern so cold-warmup empty content doesn't flake
  * the suite (model-side issue, NOT SDK bug).
  */
 
@@ -41,7 +39,7 @@ async function drainAgentText(agent: SDKAgent, prompt: string): Promise<string> 
 }
 
 describe.skipIf(KEY === undefined || KEY.length === 0)(
-  "@InjectAgent — real LLM integration (T4.2)",
+  "@InjectAgent — real LLM integration",
   () => {
     it("resolves a REQUEST-scoped Agent and sends to a real LLM", async () => {
       @Injectable()
@@ -69,7 +67,7 @@ describe.skipIf(KEY === undefined || KEY.length === 0)(
 
       const text = await container.runInRequest(async () => {
         const echo = await container.resolveAsync(Echo);
-        // EC-10 retry-on-empty pattern: cold-warmup may return empty
+        // Retry-on-empty: a cold warmup may return empty
         // content; retry once with a simpler prompt before failing.
         let reply = await drainAgentText(echo.agent, "Reply with exactly the word PONG.");
         if (reply.length === 0) {

@@ -100,7 +100,7 @@ describe("@Transactional", () => {
     expect(captured).toBeDefined();
   });
 
-  describe("EC-9 — non-DI-managed instance", () => {
+  describe("non-DI-managed instance", () => {
     it("throws OrmConfigurationError with actionable message", async () => {
       const svc = new CommitService();
       // intentionally NOT binding DataSource

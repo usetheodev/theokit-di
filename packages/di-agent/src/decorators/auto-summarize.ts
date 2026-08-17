@@ -2,6 +2,8 @@ import "reflect-metadata";
 
 import { METADATA_KEYS } from "@theokit/di";
 
+import type { DecoratedClass } from "./decorated-class.js";
+
 export interface AutoSummarizeOptions {
   triggerFraction?: number;
   keepNewest?: number;
@@ -14,14 +16,14 @@ const DEFAULTS: Required<Omit<AutoSummarizeOptions, "model">> = {
 };
 
 export function AutoSummarize(options: AutoSummarizeOptions = {}): ClassDecorator {
-  return (target: Function) => {
+  return (target) => {
     const resolved = { ...DEFAULTS, ...options };
     Reflect.defineMetadata(METADATA_KEYS.AUTO_SUMMARIZE, resolved, target);
   };
 }
 
 export function readAutoSummarizeMetadata(
-  target: abstract new (...args: never) => unknown,
+  target: DecoratedClass,
 ): (Required<Omit<AutoSummarizeOptions, "model">> & { model?: string }) | undefined {
   return Reflect.getMetadata(METADATA_KEYS.AUTO_SUMMARIZE, target) as
     | (Required<Omit<AutoSummarizeOptions, "model">> & { model?: string })

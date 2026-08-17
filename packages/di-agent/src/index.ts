@@ -6,6 +6,7 @@ export {
   readAutoSummarizeMetadata,
 } from "./decorators/auto-summarize.js";
 export { Cron, type CronMetadata, type CronOptions, readCronMetadata } from "./decorators/cron.js";
+export type { DecoratedClass } from "./decorators/decorated-class.js";
 export {
   EvalDecorator,
   type EvalOptions,

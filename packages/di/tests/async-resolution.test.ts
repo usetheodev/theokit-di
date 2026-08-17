@@ -9,7 +9,7 @@ import {
 } from "../src/index.js";
 
 // ─────────────────────────────────────────────────────────────────────
-// T3.1 — resolveAsync + async detection
+// resolveAsync + async detection
 // ─────────────────────────────────────────────────────────────────────
 
 describe("Container.resolveAsync", () => {
@@ -85,7 +85,7 @@ describe("Container.resolve — async chain defensive check", () => {
   });
 });
 
-describe("Container.resolveAsync — EC-R3-1 single-flight factory invariant", () => {
+describe("Container.resolveAsync — single-flight factory invariant", () => {
   it("class with async dep invokes factory exactly ONCE per resolve (no sync-discard double-call)", async () => {
     let factoryCalls = 0;
     @Injectable()

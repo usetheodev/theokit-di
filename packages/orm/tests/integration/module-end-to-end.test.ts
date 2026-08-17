@@ -76,7 +76,7 @@ describe("OrmModule end-to-end", () => {
     expect((await svc.repo.findById("u1"))?.name).toBe("Ada");
   });
 
-  describe("EC-5 — forFeature called before forRoot", () => {
+  describe("forFeature called before forRoot", () => {
     it("throws OrmConfigurationError with actionable message", () => {
       expect(() => OrmModule.forFeature([users])).toThrow(OrmConfigurationError);
       expect(() => OrmModule.forFeature([users])).toThrow(/forRoot/);
@@ -88,7 +88,7 @@ describe("OrmModule end-to-end", () => {
     });
   });
 
-  describe("EC-4 — multi-dataSource token isolation", () => {
+  describe("multi-dataSource token isolation", () => {
     it("default and named dataSource tokens are distinct", () => {
       OrmModule.forRoot({ schema: { users }, dialect: "sqlite", db });
       OrmModule.forRoot({

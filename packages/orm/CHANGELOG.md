@@ -1,5 +1,16 @@
 # Changelog
 
+All notable changes to `@theokit/orm` are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+### Changed
+
+- `repository`, `homepage` and `bugs` now point at `usetheodev/theokit-di`. They pointed at `usetheo/theokit-sdk`, so every "Repository" and "Report issues" link on npm led to a project that does not host this package.
+
 ## [0.1.0] - 2026-06-22
 
 ### Added
@@ -12,11 +23,6 @@
 
 - Python SQLAlchemy polyglot smoke test (T6.2) — exported JSON Schema 7 loads into SQLAlchemy `MetaData` + `create_all` succeeds against in-memory SQLite. Proves ADR D11 polyglot story works end-to-end across language boundaries. The smoke test gracefully skips when Python 3.10+ or `sqlalchemy` is unavailable.
 - `tests/integration/scripts/load_schema.py` — reference Python harness for consumers that want to load orm-emitted schemas into their own SQLAlchemy models.
-
-## [Unreleased]
-
-### Added
-
 - Package scaffold for `@theokit/orm`: tsup build, vitest setup, tsconfig with `experimentalDecorators` + `emitDecoratorMetadata`.
 - `Repository<T>` class with 6 minimum methods (`findById`, `findMany`, `insert`, `update`, `delete`, `query`) over `drizzle-orm`. EC-1 absorbed: throws `OrmConfigurationError` at construction when entity has no primary key. EC-2 absorbed: `findById`/`update`/`delete` validate `id` is non-null, non-empty, string-or-number to prevent data-loss from `DELETE WHERE id IS NULL`.
 - `getRepositoryToken(entity, dataSourceName?)` token generator. Mirrors NestJS TypeORM convention (`REPO:${entityName}` / `REPO:${dataSourceName}:${entityName}`).
