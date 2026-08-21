@@ -57,7 +57,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   unknown configuration with `EUNKNOWNCONFIG` where every earlier npm ignored it, so all three
   packages failed to publish. Measured on each version against the same package: 11.5.1 accepts,
   11.9.0 accepts, 12.0.2 rejects. Trusted publishing still requires 11.5.1 or newer, which makes
-  11.9.0 the newest npm satisfying both. (#20)
+  11.9.0 the newest npm satisfying both.
+  The same npm release breaks the path a second time, silently: `npm info --json` returns an array
+  where earlier versions returned an object, so the list of already-published versions that
+  changesets reads comes back empty and every package looks unpublished. The rejected flag stopped
+  that run before it reached the registry; nothing guarantees that ordering next time. (#20)
 - Publishing authenticates through npm Trusted Publishing instead of a long-lived token. Each of
   the three packages carries a trusted-publisher connection naming this repository and
   `.github/workflows/release.yml`; npm mints a short-lived credential for the individual job,

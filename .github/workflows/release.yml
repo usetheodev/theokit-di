@@ -74,13 +74,26 @@ jobs:
       # the install as off-lockfile, which it is — there is no lockfile that can carry the npm that
       # installs the lockfile's packages.
       #
-      # 11.9.0 AND NOT 12.x, and this is not conservatism. changesets detects pnpm and appends
-      # `--no-git-checks` to the publish; that flag reaches npm, and npm 12 rejects unknown config
-      # with EUNKNOWNCONFIG where every earlier npm ignored it. Run 32476857554 failed on exactly
-      # that, for all three packages. Measured against the same package on each version:
-      # 11.5.1 accepts, 11.9.0 accepts, 12.0.2 rejects. The floor is still 11.5.1 for OIDC, so
-      # 11.9.0 is the newest npm that satisfies both constraints. Moving this to 12 breaks the
-      # publish again, and the error names a flag this file never wrote.
+      # 11.9.0 AND NOT 12.x, and this is not conservatism. npm 12 breaks this release path in TWO
+      # places, and the quiet one is the dangerous half.
+      #
+      # 1. Rejected flag (loud). changesets detects pnpm and appends `--no-git-checks`; the flag
+      #    reaches npm, and npm 12 rejects unknown config with EUNKNOWNCONFIG where every earlier
+      #    npm ignored it. Run 32476857554 failed on exactly that, for all three packages. npm
+      #    reports the key without the negation, so the error names a flag nothing here wrote.
+      #
+      # 2. Blind registry check (silent). npm 12 returns an ARRAY from `npm info --json` where
+      #    every earlier npm returned an object. changesets reads `response.pkgInfo.versions || []`
+      #    — on an array that is `undefined`, so the list of published versions becomes empty and
+      #    every package looks unpublished. Nothing errors; it simply tries to publish everything.
+      #    Measured against the real registry with the bundle's own logic:
+      #      npm 11.9.0 -> object, versions: 2 entries, includes("0.1.1") = true  (skips)
+      #      npm 12.0.2 -> array,  versions: undefined, includes("0.1.1") = false (publishes)
+      #
+      # On that run the loud bug interrupted the silent one before it reached the registry. Do not
+      # count on that ordering. The OIDC floor is still 11.5.1, so 11.9.0 is the newest npm that
+      # satisfies both constraints. Bumping this to 12 does not cost a rejected flag — it costs
+      # changesets the ability to see what is already published.
       - name: Install an npm that speaks OIDC (>= 11.5.1) but tolerates pnpm's publish flags
         run: npm install -g npm@11.9.0 # zizmor: ignore[adhoc-packages] — bootstrapping npm itself; no lockfile can cover it
 
