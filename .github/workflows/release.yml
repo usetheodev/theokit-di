@@ -87,5 +87,8 @@ jobs:
           # The only credential left, and it is GitHub's own: changesets uses it to open the
           # version pull request. Nothing here authenticates to npm.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # NPM_CONFIG_PROVENANCE is gone on purpose: with trusted publishing npm attaches a
-          # provenance attestation by default, and the flag is no longer needed.
+          # NPM_CONFIG_PROVENANCE is gone on purpose, and the reason that does not depend on npm's
+          # defaults is the local one: `publishConfig.provenance: true` already sits in all three
+          # manifests, so provenance is declared beside the package it describes instead of in an
+          # environment variable this file has to remember. npm also attaches the attestation by
+          # default under trusted publishing — true, and the weaker of the two reasons.
