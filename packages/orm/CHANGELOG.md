@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-21
+
 ### Added
 
 - Every published export now carries documentation an editor can show. Measured on the emitted
@@ -33,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `repository`, `homepage` and `bugs` now point at `usetheokit/theokit-di`. They pointed at `usetheo/theokit-sdk`, so every "Repository" and "Report issues" link on npm led to a project that does not host this package.
 - `@Transactional` no longer claims the container binds its DataSource automatically. Nothing ever did. The error message now names `bindDataSourceToInstance`, the one call that fixes it, and the docs show the container recipe: inject `ORM_DATA_SOURCE_TOKEN` and bind in a `@PostConstruct` hook (#4).
 - **Breaking:** `@Transactional({ isolationLevel })` was accepted and silently ignored — the options parameter was never read. The level is now passed to the driver, and rejected with an `OrmConfigurationError` on `sqlite`, which has no per-transaction isolation level to set. Code that passed a level on sqlite and appeared to work was never getting one; it now fails instead of pretending (#4).
+
 
 ## [0.1.0] - 2026-06-22
 

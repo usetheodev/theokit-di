@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-21
+
 ### Added
 
 - Every published export now carries documentation an editor can show. Measured on the emitted
@@ -40,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   five now cover them. (#23)
 - `@Primary` and `@Qualifier` documented a resolution priority the container has never had. They record metadata and nothing else, and their JSDoc now says exactly that, with the working alternative alongside. Implementing them means holding several registrations per token — which is the cache key, the cycle-detection node identity and the disposal order — so it is a design decision rather than a missing branch, and it has not been made (#5).
 - The English-only lint gate could not fail on an accented word. It split identifiers with an ASCII-only pattern before testing them for diacritics, so `não` became `n` and `o` and the diacritic tier was unreachable. Both tiers now work, verified by planting an accented identifier and watching the sweep turn red (#7).
+
 
 ## 0.1.1
 
