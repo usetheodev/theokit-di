@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The peer range on `@theokit/di` accepts `^0.2.0` alongside `^0.1.0-next.0`. `@theokit/di`
+  ships breaking disposal fixes as `0.2.0`, which falls outside the old range; without this,
+  installing both current versions would report an unmet peer dependency, and the release
+  tooling would force this package to `1.0.0` to express the incompatibility. Nothing here
+  uses the behaviour that changed — the decorators record metadata and the container never
+  disposed anything this package registers. (#20)
 - `repository`, `homepage` and `bugs` now point at `usetheokit/theokit-di`. They pointed at `usetheo/theokit-sdk`, so every "Repository" and "Report issues" link on npm led to a project that does not host this package.
 - `readAuthMetadata`, `readEvalDecoratorMetadata` and `readWorkflowMetadata` now declare their parameter as `DecoratedClass` rather than `Function`. `Function` is the widest callable type there is, so it documented nothing and admitted values that are not classes. Any class you already passed still type-checks.
 - JSDoc and comments no longer cite plan tasks or edge-case identifiers that exist in no repository a reader can reach.

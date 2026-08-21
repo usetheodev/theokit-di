@@ -20,6 +20,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The peer range on `@theokit/di` accepts `^0.2.0` alongside `^0.1.0`. `@theokit/di` ships
+  breaking disposal fixes as `0.2.0`, outside the old range. `OrmModule.forRoot` registers its
+  DataSource with `useValue`, which is the provider kind whose disposal changed — but the
+  DataSource is a plain object with no `dispose`, no `Symbol.asyncDispose` and no
+  `@PreDestroy`, so the container never tore it down and the new ownership rule changes
+  nothing here. (#20)
 - `exportSchema` marks a column `required` only when it is `NOT NULL` **and** has no default —
   which is what it always did, but nothing proved it. Every fixture paired `notNull` with no
   default, or a default with a nullable column, so dropping half the rule left the suite green.
