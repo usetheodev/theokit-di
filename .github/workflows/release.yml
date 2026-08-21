@@ -100,6 +100,28 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
 
+      # `pnpm install` runs the root `prepare` script, which points core.hooksPath at
+      # `.githooks` — so the pre-commit secret scan is armed on this runner. changesets then
+      # runs `git commit -m "Version Packages"`, the hook fires, finds no `trufflehog` binary,
+      # and fails closed exactly as designed. Run 32478351961 died there, after the version bump
+      # had already been computed correctly.
+      #
+      # The hook is right to fail closed and wrong to be armed here. It exists for the commit a
+      # PERSON makes: CI can only catch a credential once it is already in the history, and the
+      # hook is the last point where a leak is still free to fix. This commit is made by a bot,
+      # from files it generated out of content already in the repository, onto
+      # `changeset-release/main` — which reaches `main` only through a pull request, and
+      # secret-scan.yml runs on `pull_request` with base `main`, scanning base..head. That is the
+      # layer the hook's own header calls the one that cannot be skipped, and it still runs.
+      #
+      # Unset rather than install trufflehog here: adding a network download to the job that
+      # publishes buys a scan of generated version numbers that a later gate scans anyway.
+      #
+      # `|| true` because --unset exits 5 when the key is absent, and an absent key is already the
+      # state this step wants. Without it, a release would fail for the opposite reason.
+      - name: Disarm the local pre-commit hook for the bot's version commit
+        run: git config --unset core.hooksPath || true
+
       - name: Create Release Pull Request or Publish
         uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
