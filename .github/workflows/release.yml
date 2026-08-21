@@ -100,6 +100,42 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
 
+      # `pnpm install` runs the root `prepare` script, which points core.hooksPath at
+      # `.githooks` — so the pre-commit secret scan is armed on this runner. changesets then
+      # runs `git commit -m "Version Packages"`, the hook fires, finds no `trufflehog` binary,
+      # and fails closed exactly as designed. Run 32478351961 died there, after the version bump
+      # had already been computed correctly.
+      #
+      # The hook is right to fail closed and wrong to be armed here. It exists for the commit a
+      # PERSON makes: CI can only catch a credential once it is already in the history, and the
+      # hook is the last point where a leak is still free to fix. This commit is made by a bot,
+      # from files it generated out of content already in the repository, onto
+      # `changeset-release/main` — which reaches `main` only through a pull request, and
+      # secret-scan.yml is configured to run on `pull_request` with base `main`, scanning
+      # base..head.
+      #
+      # BE PRECISE ABOUT WHAT THAT BUYS, because the obvious sentence overstates it. changesets
+      # opens that PR with `secrets.GITHUB_TOKEN`, and GitHub does not start workflow runs from
+      # GITHUB_TOKEN-authored events — they are absent, or created needing manual approval; the
+      # docs read both ways and this repository has zero bot-triggered runs to settle it with.
+      # So the scan does NOT run by itself on the Version PR. What forces it is the other gate:
+      # `Verify (…)` is a required check on `main`, so with no runs the Version PR is not
+      # mergeable, and a person has to release the runs before anything can merge. The scan then
+      # runs alongside.
+      #
+      # That is a real guarantee and a weaker one than "unskippable by construction" — it needs a
+      # human in the path. Releases here already have one. Do not upgrade it by handing the action
+      # a PAT so the PR looks human-authored: that puts a long-lived credential back into the job
+      # that publishes, which is the thing this file was rewritten to remove.
+      #
+      # Unset rather than install trufflehog here: adding a network download to the job that
+      # publishes buys a scan of generated version numbers that a later gate scans anyway.
+      #
+      # `|| true` because --unset exits 5 when the key is absent, and an absent key is already the
+      # state this step wants. Without it, a release would fail for the opposite reason.
+      - name: Disarm the local pre-commit hook for the bot's version commit
+        run: git config --unset core.hooksPath || true
+
       - name: Create Release Pull Request or Publish
         uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
