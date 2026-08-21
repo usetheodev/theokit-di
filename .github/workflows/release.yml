@@ -111,8 +111,22 @@ jobs:
       # hook is the last point where a leak is still free to fix. This commit is made by a bot,
       # from files it generated out of content already in the repository, onto
       # `changeset-release/main` — which reaches `main` only through a pull request, and
-      # secret-scan.yml runs on `pull_request` with base `main`, scanning base..head. That is the
-      # layer the hook's own header calls the one that cannot be skipped, and it still runs.
+      # secret-scan.yml is configured to run on `pull_request` with base `main`, scanning
+      # base..head.
+      #
+      # BE PRECISE ABOUT WHAT THAT BUYS, because the obvious sentence overstates it. changesets
+      # opens that PR with `secrets.GITHUB_TOKEN`, and GitHub does not start workflow runs from
+      # GITHUB_TOKEN-authored events — they are absent, or created needing manual approval; the
+      # docs read both ways and this repository has zero bot-triggered runs to settle it with.
+      # So the scan does NOT run by itself on the Version PR. What forces it is the other gate:
+      # `Verify (…)` is a required check on `main`, so with no runs the Version PR is not
+      # mergeable, and a person has to release the runs before anything can merge. The scan then
+      # runs alongside.
+      #
+      # That is a real guarantee and a weaker one than "unskippable by construction" — it needs a
+      # human in the path. Releases here already have one. Do not upgrade it by handing the action
+      # a PAT so the PR looks human-authored: that puts a long-lived credential back into the job
+      # that publishes, which is the thing this file was rewritten to remove.
       #
       # Unset rather than install trufflehog here: adding a network download to the job that
       # publishes buys a scan of generated version numbers that a later gate scans anyway.
