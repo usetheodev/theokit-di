@@ -65,15 +65,37 @@ jobs:
       # THE STEP WITHOUT WHICH THE OIDC CONFIGURATION IS CORRECT AND USELESS. `setup-node` ships
       # whatever npm the Node release bundles, and Node 22 bundles npm 10.9.7. OIDC needs npm
       # >= 11.5.1: an older npm does not know what to do with `id-token: write`, looks for a
-      # credential, and finds none. The publish itself runs through `npm`, not through pnpm —
-      # `pnpm changeset publish` spawns the npm CLI — so this is the binary that has to be new.
+      # credential, and finds none. changesets spawns `pnpm publish` (it detects the package
+      # manager first — `@changesets/cli` `getPublishTool`), and pnpm reaches npm underneath, so
+      # the npm on PATH is still the binary that authenticates and has to be new.
       #
-      # Pinned to an exact version, not `@latest` or `@12`: this binary performs the publish, and a
+      # Pinned to an exact version, not `@latest` or `@11`: this binary performs the publish, and a
       # new npm arriving on its own would be an unreviewed change to the release path. zizmor flags
       # the install as off-lockfile, which it is — there is no lockfile that can carry the npm that
       # installs the lockfile's packages.
-      - name: Install an npm that speaks OIDC (>= 11.5.1)
-        run: npm install -g npm@12.0.2 # zizmor: ignore[adhoc-packages] — bootstrapping npm itself; no lockfile can cover it
+      #
+      # 11.9.0 AND NOT 12.x, and this is not conservatism. npm 12 breaks this release path in TWO
+      # places, and the quiet one is the dangerous half.
+      #
+      # 1. Rejected flag (loud). changesets detects pnpm and appends `--no-git-checks`; the flag
+      #    reaches npm, and npm 12 rejects unknown config with EUNKNOWNCONFIG where every earlier
+      #    npm ignored it. Run 32476857554 failed on exactly that, for all three packages. npm
+      #    reports the key without the negation, so the error names a flag nothing here wrote.
+      #
+      # 2. Blind registry check (silent). npm 12 returns an ARRAY from `npm info --json` where
+      #    every earlier npm returned an object. changesets reads `response.pkgInfo.versions || []`
+      #    — on an array that is `undefined`, so the list of published versions becomes empty and
+      #    every package looks unpublished. Nothing errors; it simply tries to publish everything.
+      #    Measured against the real registry with the bundle's own logic:
+      #      npm 11.9.0 -> object, versions: 2 entries, includes("0.1.1") = true  (skips)
+      #      npm 12.0.2 -> array,  versions: undefined, includes("0.1.1") = false (publishes)
+      #
+      # On that run the loud bug interrupted the silent one before it reached the registry. Do not
+      # count on that ordering. The OIDC floor is still 11.5.1, so 11.9.0 is the newest npm that
+      # satisfies both constraints. Bumping this to 12 does not cost a rejected flag — it costs
+      # changesets the ability to see what is already published.
+      - name: Install an npm that speaks OIDC (>= 11.5.1) but tolerates pnpm's publish flags
+        run: npm install -g npm@11.9.0 # zizmor: ignore[adhoc-packages] — bootstrapping npm itself; no lockfile can cover it
 
       - run: pnpm install --frozen-lockfile
       - run: pnpm build

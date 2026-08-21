@@ -52,6 +52,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The release workflow installs npm `11.9.0` instead of `12.0.2`. changesets detects pnpm and
+  appends `--no-git-checks` to the publish command; that flag reaches npm, and npm 12 rejects
+  unknown configuration with `EUNKNOWNCONFIG` where every earlier npm ignored it, so all three
+  packages failed to publish. Measured on each version against the same package: 11.5.1 accepts,
+  11.9.0 accepts, 12.0.2 rejects. Trusted publishing still requires 11.5.1 or newer, which makes
+  11.9.0 the newest npm satisfying both.
+  The same npm release breaks the path a second time, silently: `npm info --json` returns an array
+  where earlier versions returned an object, so the list of already-published versions that
+  changesets reads comes back empty and every package looks unpublished. The rejected flag stopped
+  that run before it reached the registry; nothing guarantees that ordering next time. (#32)
 - Publishing authenticates through npm Trusted Publishing instead of a long-lived token. Each of
   the three packages carries a trusted-publisher connection naming this repository and
   `.github/workflows/release.yml`; npm mints a short-lived credential for the individual job,
@@ -69,9 +79,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   hid it. The documentation gates are listed too, for the same reason. (#24)
 - The four actions in the release workflow are pinned by commit SHA instead of by tag.
   `changesets/action@v1` was the sharpest edge: `v1` is not a tag in that repository, it is a
-  **branch**, so any push to it changed the code running with `NPM_TOKEN` and `id-token: write` —
-  enough to publish signed packages as this organization, with no release and no version bump to
-  notice. Each pin carries the version it resolved to, verified against the action's own tags.
+  **branch**, so any push to it changed the code running in the job that publishes — a job with
+  `id-token: write`, able to publish signed packages as this organization, with no release and no
+  version bump to notice. Each pin carries the version it resolved to, verified against the
+  action's own tags.
   (#20)
 - **The repository moved to the official `usetheokit` organization.** Existing clones keep
   working: GitHub redirects the old `usetheodev/theokit-di` remote permanently. The
