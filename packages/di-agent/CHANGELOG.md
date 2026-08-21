@@ -1,26 +1,13 @@
 # Changelog
 
-## 0.3.0
-
-### Minor Changes
-
-- a4952ad: **Breaking: `readCronMetadata` and `readHitlMetadata` return a `ReadonlyMap` keyed by
-  method name.** `@Cron` and `@Hitl` applied to two methods of the same class silently
-  overwrote each other — the second decorator replaced the first, and nothing failed.
-  Reading either now gives you every decorated method instead of the last one.
-
-  Every published export carries documentation an editor can show (56/56 on the emitted
-  declarations), and `DecoratedClass` — the constructor type the reader helpers accept —
-  is exported so consumers can name it.
-
-  Peer range widened to accept `@theokit/di@^0.2.0`.
-
 All notable changes to `@theokit/di-agent` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.3.0] - 2026-08-21
 
 ### Added
 
@@ -44,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `readAuthMetadata`, `readEvalDecoratorMetadata` and `readWorkflowMetadata` now declare their parameter as `DecoratedClass` rather than `Function`. `Function` is the widest callable type there is, so it documented nothing and admitted values that are not classes. Any class you already passed still type-checks.
 - JSDoc and comments no longer cite plan tasks or edge-case identifiers that exist in no repository a reader can reach.
 - **Breaking:** `readCronMetadata` and `readHitlMetadata` return a `ReadonlyMap` keyed by method name instead of a single object or `undefined`. `@Cron` and `@Hitl` kept one object per class, so decorating a second method silently discarded the first — a class with two scheduled routines quietly lost one. Both now accumulate per method, like the other fourteen decorators. Migration: `readCronMetadata(C)?.schedule` becomes `readCronMetadata(C).get("methodName")?.schedule`, and an undecorated class yields an empty map rather than `undefined` (#6).
+
 
 ## 0.2.0
 

@@ -1,38 +1,13 @@
 # Changelog
 
-## 0.2.0
-
-### Minor Changes
-
-- a4952ad: **Breaking: `@Transactional({ isolationLevel })` is no longer accepted and ignored.**
-  The options parameter was never read, so code that passed a level and appeared to work
-  was never getting one. The level now reaches the driver, and is rejected with an
-  `OrmConfigurationError` on `sqlite`, which has no per-transaction isolation level to
-  set.
-
-  **`@Transactional` is usable from the published package.** `bindDataSourceToInstance`
-  is what its error message tells you to call, and it was not exported — following the
-  instruction did not compile. It and `TransactionalOptions` are now reachable from the
-  package entry point, and the docs show the container recipe: inject
-  `ORM_DATA_SOURCE_TOKEN` and bind in a `@PostConstruct` hook.
-
-  `exportSchema` marks a column `required` only when it is `NOT NULL` **and** has no
-  default. That is what it always did, but no fixture proved it — every one paired
-  `notNull` with no default, or a default with a nullable column, so dropping half the
-  rule left the suite green.
-
-  Every published export carries documentation an editor can show — the package went
-  from 3/20 to 20/20, and `@theokit/orm/schema-export`, the polyglot surface a Python or
-  Go consumer reaches first, from 0/4 to 4/4.
-
-  Peer range widened to accept `@theokit/di@^0.2.0`.
-
 All notable changes to `@theokit/orm` are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.2.0] - 2026-08-21
 
 ### Added
 
@@ -60,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `repository`, `homepage` and `bugs` now point at `usetheokit/theokit-di`. They pointed at `usetheo/theokit-sdk`, so every "Repository" and "Report issues" link on npm led to a project that does not host this package.
 - `@Transactional` no longer claims the container binds its DataSource automatically. Nothing ever did. The error message now names `bindDataSourceToInstance`, the one call that fixes it, and the docs show the container recipe: inject `ORM_DATA_SOURCE_TOKEN` and bind in a `@PostConstruct` hook (#4).
 - **Breaking:** `@Transactional({ isolationLevel })` was accepted and silently ignored — the options parameter was never read. The level is now passed to the driver, and rejected with an `OrmConfigurationError` on `sqlite`, which has no per-transaction isolation level to set. Code that passed a level on sqlite and appeared to work was never getting one; it now fails instead of pretending (#4).
+
 
 ## [0.1.0] - 2026-06-22
 
