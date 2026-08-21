@@ -20,13 +20,19 @@ jobs:
       pull-requests: write
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      # Actions pinned by commit SHA rather than by tag. This job holds NPM_TOKEN and runs
+      # with `id-token: write`, so whatever it executes can publish signed packages as this
+      # organization. `changesets/action@v1` was the sharpest edge: `v1` is not a tag here, it
+      # is a BRANCH — any push to it changed the code running with those credentials, with no
+      # release and no version bump to notice. Each pin carries the version it resolved to on
+      # 2026-08-21, verified against the action's own tags, not assumed from the ref name.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
         with:
           version: 9.15.0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: 'pnpm'
@@ -34,7 +40,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - name: Create Release Pull Request or Publish
-        uses: changesets/action@v1
+        uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
           publish: pnpm changeset publish
           version: pnpm changeset version
