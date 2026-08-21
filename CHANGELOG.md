@@ -14,6 +14,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Workflow Lint`, a CI gate running actionlint and zizmor over `.github/workflows/`, so the
+  pipeline's own conventions — pinned actions, bounded jobs, least-privilege tokens — are checked
+  by a machine rather than by whoever reads the diff (#38)
+
+### Changed
+
+- Node pinned to 22.12.0 and pnpm to 10.34.1 across the repository, resolved from `.nvmrc` and
+  `packageManager` so each has a single place to change. CI previously tested the newest 22.x and
+  never the 22.12.0 floor that `engines` declares (#38)
+- `Release` declares a read-only permission floor at the workflow level instead of inheriting the
+  repository default (#38)
+
 - Three documentation gates, run together with `pnpm quality:docs`.
   `check-doc-coverage.mjs` asks the TypeScript compiler how much of the PUBLISHED surface
   carries documentation an editor can show, reading the emitted declarations rather than the
