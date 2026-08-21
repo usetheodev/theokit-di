@@ -29,6 +29,10 @@ const pgEntities = pgTable("entities", {
   meta: json("meta"),
   bigNum: pgBigint("big_num", { mode: "bigint" }),
   createdAt: timestamp("created_at").notNull(),
+  // notNull AND defaulted — the combination that decides whether `required` means "the caller
+  // must supply this" or merely "the column rejects NULL". Absent from every other fixture, and
+  // the single most common shape in a real schema.
+  insertedAt: timestamp("inserted_at").notNull().defaultNow(),
 });
 
 describe("schema-export — exportSchema (single table)", () => {
@@ -65,6 +69,29 @@ describe("schema-export — exportSchema (single table)", () => {
     const s = exportSchema(users);
     expect(s.required).toContain("name");
     expect(s.required).not.toContain("age");
+  });
+});
+
+describe("schema-export — what required[] actually means", () => {
+  // `required` says the CALLER must supply a value, which is not the same as the column
+  // rejecting NULL. A `notNull` column with a default is satisfied by the database, so demanding
+  // it from the caller would make every generated model reject a perfectly good insert.
+  //
+  // Every other fixture pairs notNull with no default, or a default with a nullable column, so
+  // none of them can tell the two rules apart: dropping the `hasDefault` half of the guard leaves
+  // them all green.
+  it("excludes a notNull column that has a default", () => {
+    const s = exportSchema(pgEntities);
+    expect(s.properties.insertedAt).toBeDefined();
+    expect(s.required).not.toContain("insertedAt");
+  });
+
+  it("still includes a notNull column that has no default", () => {
+    expect(exportSchema(pgEntities).required).toContain("createdAt");
+  });
+
+  it("excludes a nullable column that has a default", () => {
+    expect(exportSchema(pgEntities).required).not.toContain("active");
   });
 });
 

@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Every published export now carries documentation an editor can show. Measured on the emitted
+  declarations, 33/37 to 37/37. (#24)
+
 - npm provenance is enabled again. It was switched off because npm refuses attestation for packages built from a private source repository; this one is public now, so published tarballs carry a sigstore attestation linking them to the commit and workflow that produced them.
 - `@PostConstruct` is now called. The container invokes the marked method once the instance is built and every constructor dependency is injected — once per instance, so a SINGLETON initialises once however often it is resolved. An async hook is awaited by `resolveAsync`; `resolve()` cannot await one and throws `AsyncPostConstructInSyncResolveError` rather than return an object whose initialiser is still running (#5).
 - `@PreDestroy` is now called, before `dispose()` when a class has both, and awaited if it returns a Promise. A class no longer needs a `dispose()` method to be torn down — declaring the hook is enough for the container to track it. A failing hook no longer stops the others; the failures arrive together as an `AggregateError` (#5).
@@ -16,7 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- `repository`, `homepage` and `bugs` now point at `usetheodev/theokit-di`. They pointed at `usetheo/theokit-sdk`, so every "Repository" and "Report issues" link on npm led to a project that does not host this package.
+- `repository`, `homepage` and `bugs` now point at `usetheokit/theokit-di`. They pointed at `usetheo/theokit-sdk`, so every "Repository" and "Report issues" link on npm led to a project that does not host this package.
 - The package description no longer names `@theokit/http-decorators`, which does not exist. The package is `@theokit/http`.
 - The README no longer carries a Portuguese clause, and says plainly where `@theokit/http` ships from.
 - JSDoc on the public surface no longer cites ADRs, audit findings, plan tasks or edge-case identifiers that exist in no repository a reader can reach. The rationale each citation stood for is now written inline, so it survives into the published type declarations.
@@ -24,6 +27,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- **Breaking:** `container.dispose()` no longer tears down a value it was handed rather than built.
+  A `useValue` with a `dispose()` method was being closed by the container even though the caller
+  constructed it and still holds the reference — so a caller who closed their own pool, as every
+  convention says they should, closed it twice. The rule is now ownership: the container tears down
+  what it constructed (`useClass`, `useFactory`) and leaves alone what it was given. (#23)
+- **Breaking:** an instance reached through `useExisting` is disposed once, not once per token that
+  names it. An alias resolves to the same object by definition, and the container was tracking it
+  again under the alias, so a resource behind two tokens was closed twice.
+  Both were found while documenting the disposal contract: the docblock stated the ownership rule
+  and the code did not implement it. Neither shape appeared in any of the eight disposal tests;
+  five now cover them. (#23)
 - `@Primary` and `@Qualifier` documented a resolution priority the container has never had. They record metadata and nothing else, and their JSDoc now says exactly that, with the working alternative alongside. Implementing them means holding several registrations per token — which is the cache key, the cycle-detection node identity and the disposal order — so it is a design decision rather than a missing branch, and it has not been made (#5).
 - The English-only lint gate could not fail on an accented word. It split identifiers with an ASCII-only pattern before testing them for diacritics, so `não` became `n` and `o` and the diacritic tier was unreachable. Both tiers now work, verified by planting an accented identifier and watching the sweep turn red (#7).
 

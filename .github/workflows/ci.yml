@@ -1,0 +1,89 @@
+name: CI
+
+# The four gates CONTRIBUTING.md names — check, typecheck, build, test — plus the three
+# documentation gates, run where nobody can skip them. Until now this repository had no
+# workflow that ran any of them: a pull request showed "all checks passed" on the strength
+# of a secret scan alone, which says nothing about whether the code compiles.
+#
+# BOTH promotion legs are pull requests — workspace -> develop and develop -> main — so both
+# bases are listed, exactly as secret-scan.yml already does. Listing only `main` would leave
+# `develop`, the branch whose entire job is to integrate, accepting code CI never saw.
+#
+# `workspace` is deliberately absent from `push`: every promotion out of it is a pull request,
+# so the pull_request trigger already covers that commit, and adding it here would run the
+# same job twice on the same SHA.
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# Supersede in-flight runs, never on a protected branch: those runs are the record of what
+# `main` and `develop` actually passed, and Release keys off main's state.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }}
+
+# Nothing here writes. The default token is read-only so a compromised step in a build
+# cannot push, tag or open anything.
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Verify (check, build, typecheck, test, docs)
+    runs-on: ubuntu-latest
+    # The whole suite is seconds of work. A ceiling far under GitHub's 6-hour default keeps
+    # a wedged runner from holding a slot all afternoon.
+    timeout-minutes: 20
+    steps:
+      # Actions are pinned by commit SHA, not by tag. A tag is mutable: whoever controls the
+      # action repository can repoint `v7` at different code, and it would run here with the
+      # permissions of this workflow. This is the convention secret-scan.yml already follows;
+      # release.yml still uses floating tags and should be moved to match.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nothing here pushes. Leaving the token in .git/config would let any later step,
+          # or any tool reading the config, act as this repository.
+          persist-credentials: false
+
+      # No `version:` here on purpose. The action reads `packageManager` from package.json,
+      # which is already the single authority on the pnpm version — pinning it a second time
+      # in this file creates two places to update and one of them will be forgotten.
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          # .nvmrc for the same reason: the version developers use locally is the version CI
+          # uses, without a second copy that can drift from it.
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      # Formatting and lint need nothing built, so they run first and fail in seconds rather
+      # than after a build nobody needed.
+      - name: Biome (lint + format)
+        run: pnpm check
+
+      # BUILD BEFORE TYPECHECK AND TEST, not after. `@theokit/di` is a `workspace:*`
+      # dependency of both di-agent and orm, and it resolves through its `exports` map, which
+      # points at `dist/`. On a developer machine a stale `dist/` hides this; on a fresh clone
+      # typecheck fails outright. CONTRIBUTING.md lists the four gates as check, typecheck,
+      # build, test — that reads as an order and does not work as one.
+      - name: Build all packages (the types the later gates resolve against)
+        run: pnpm build
+
+      - name: TypeScript (no emit)
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      # Last because two of the three read the EMITTED declarations under `dist/`, so they are
+      # meaningless before the build above. A docblock in `src/` is not documentation until it
+      # survives the rollup: `stripInternal` deletes a declaration outright when `@internal`
+      # appears in its leading comments, and the rollup relocates comments on its own. The file
+      # a consumer installs is the only one whose documentation is real.
+      - name: Documentation gates (orphans, drift, coverage)
+        run: pnpm quality:docs

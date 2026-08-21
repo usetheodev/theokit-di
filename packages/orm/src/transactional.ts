@@ -41,6 +41,7 @@ function readDataSourceFromInstance(instance: object): DataSource | undefined {
   return (v as DataSource | undefined) ?? undefined;
 }
 
+/** Options for {@link Transactional}. */
 export interface TransactionalOptions {
   /**
    * Isolation level for the transaction, passed straight to the driver.

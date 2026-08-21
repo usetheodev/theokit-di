@@ -22,6 +22,18 @@ function resolveEntityName(entity: unknown): string {
   );
 }
 
+/**
+ * The container token under which one table's {@link Repository} is registered.
+ *
+ * `REPO:<table>` for the default data source and `REPO:<source>:<table>` for a named one, mirroring
+ * the NestJS TypeORM convention. The name comes from the table as the DATABASE knows it, not from
+ * the key it has in your schema object — the two differ whenever a table is declared as
+ * `users: sqliteTable("app_users", ...)`.
+ *
+ * @throws {OrmConfigurationError} when `entity` is null, undefined, or carries no resolvable
+ *   Drizzle name. Deriving a token from an unnameable entity would register the repository under a
+ *   token nothing could ask for.
+ */
 export function getRepositoryToken(entity: unknown, dataSourceName: string = DEFAULT_DS): string {
   const entityName = resolveEntityName(entity);
   return dataSourceName === DEFAULT_DS
