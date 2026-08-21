@@ -63,7 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   GitHub does not start workflow runs from `GITHUB_TOKEN`-authored events. What forces it is the
   required `Verify` check — with no runs the pull request cannot merge, so a person has to release
   them first. A real guarantee, and one that needs a human in the path rather than holding by
-  construction. (#32)
+  construction. (#34)
 - The release workflow installs npm `11.9.0` instead of `12.0.2`. changesets detects pnpm and
   appends `--no-git-checks` to the publish command; that flag reaches npm, and npm 12 rejects
   unknown configuration with `EUNKNOWNCONFIG` where every earlier npm ignored it, so all three
