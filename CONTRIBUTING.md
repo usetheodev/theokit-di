@@ -87,6 +87,11 @@ Releases go through [changesets](https://github.com/changesets/changesets). Add
 one with `pnpm changeset` when your change should ship. The release workflow runs
 on a push to `main` and publishes with npm provenance.
 
+Publishing authenticates through npm Trusted Publishing, and the trust names
+`.github/workflows/release.yml` by path. Renaming or moving that file breaks
+publishing for all three packages until the connection is updated on npmjs.com —
+there is no token to fall back on.
+
 ## Reporting a bug
 
 Open an issue with the version you tested, what you expected, what happened, and

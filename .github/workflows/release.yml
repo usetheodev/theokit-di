@@ -1,9 +1,17 @@
 name: Release
 
-# theokit-di: di + di-agent + orm. Changesets-driven per-package
-# release. Auth via NPM_TOKEN (NODE_AUTH_TOKEN). Provenance is enabled: npm only
-# attests packages built from a public source repository, which this now is.
-
+# theokit-di: di + di-agent + orm. Changesets-driven per-package release.
+#
+# AUTHENTICATION IS OIDC, NOT A TOKEN. Each of the three packages carries a Trusted Publisher
+# connection on npmjs.com naming this repository and THIS FILE. npm mints a short-lived
+# credential for the individual job, scoped to that package, and it cannot be exported or
+# replayed. Renaming this file, or publishing from any other workflow, breaks the trust and the
+# publish is rejected — that is the point of it.
+#
+# What it replaced: `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}`, referring to a secret that did
+# not exist in this repository or in the organization (`total_count: 0` in both). The workflow
+# reported success because `changesets/action` finds no changeset and exits clean; the first real
+# changeset would have reached the registry with no credential at all.
 on:
   push:
     branches: [main]
@@ -15,36 +23,69 @@ jobs:
   release:
     name: Release via Changesets (theokit-di)
     runs-on: ubuntu-latest
+    # Publishing three packages is minutes of work. A ceiling well under GitHub's 6-hour default
+    # keeps a wedged job from holding a runner, and this is the job it costs the most to leave open.
+    timeout-minutes: 30
     permissions:
+      # changesets opens and updates the version pull request, and pushes its tags.
       contents: write
       pull-requests: write
+      # The OIDC token npm exchanges for permission to publish. Without it there is no credential
+      # at all now that the token is gone.
       id-token: write
     steps:
-      # Actions pinned by commit SHA rather than by tag. This job holds NPM_TOKEN and runs
-      # with `id-token: write`, so whatever it executes can publish signed packages as this
-      # organization. `changesets/action@v1` was the sharpest edge: `v1` is not a tag here, it
-      # is a BRANCH — any push to it changed the code running with those credentials, with no
-      # release and no version bump to notice. Each pin carries the version it resolved to on
-      # 2026-08-21, verified against the action's own tags, not assumed from the ref name.
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      # Actions pinned by commit SHA rather than by tag. This job can publish signed packages as
+      # this organization, so whatever it runs must be a fixed commit. `changesets/action@v1` was
+      # the sharpest edge: `v1` is not a tag in that repository, it is a BRANCH — any push to it
+      # changed the code running here, with no release and no version bump to notice. Each pin
+      # carries the version it resolved to on 2026-08-21, verified against the action's own tags.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # changesets reads tags to decide what is unpublished; a shallow clone hides them.
           fetch-depth: 0
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+
+      # No `version:` — `packageManager` in package.json is already the authority on the pnpm
+      # version, and pinning it twice creates two places to update.
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          version: 9.15.0
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 22
+          # .nvmrc, for the same single-authority reason. It reads `22`, which resolves to the
+          # latest 22.x — comfortably past the 22.14.0 that trusted publishing requires.
+          node-version-file: '.nvmrc'
           cache: 'pnpm'
-          registry-url: 'https://registry.npmjs.org'
+          # NO `registry-url`. It looks harmless and is not: setup-node writes
+          # `//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}` into an npmrc UNCONDITIONALLY and
+          # points NPM_CONFIG_USERCONFIG at it, then exports NODE_AUTH_TOKEN only if the caller
+          # supplied one — which, under OIDC, nobody does. The job would publish with a config
+          # declaring a credential that does not exist. registry.npmjs.org is already the default,
+          # and `publishConfig.access: public` in each manifest already covers the scope, so the
+          # line bought nothing and left one more thing to go wrong on the first OIDC publish.
+
+      # THE STEP WITHOUT WHICH THE OIDC CONFIGURATION IS CORRECT AND USELESS. `setup-node` ships
+      # whatever npm the Node release bundles, and Node 22 bundles npm 10.9.7. OIDC needs npm
+      # >= 11.5.1: an older npm does not know what to do with `id-token: write`, looks for a
+      # credential, and finds none. The publish itself runs through `npm`, not through pnpm —
+      # `pnpm changeset publish` spawns the npm CLI — so this is the binary that has to be new.
+      #
+      # Pinned to an exact version, not `@latest` or `@12`: this binary performs the publish, and a
+      # new npm arriving on its own would be an unreviewed change to the release path. zizmor flags
+      # the install as off-lockfile, which it is — there is no lockfile that can carry the npm that
+      # installs the lockfile's packages.
+      - name: Install an npm that speaks OIDC (>= 11.5.1)
+        run: npm install -g npm@12.0.2 # zizmor: ignore[adhoc-packages] — bootstrapping npm itself; no lockfile can cover it
+
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
+
       - name: Create Release Pull Request or Publish
         uses: changesets/action@a45c4d594aa4e2c509dc14a9f2b3b67ba3780d0d # v1.9.0
         with:
           publish: pnpm changeset publish
           version: pnpm changeset version
         env:
+          # The only credential left, and it is GitHub's own: changesets uses it to open the
+          # version pull request. Nothing here authenticates to npm.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
+          # NPM_CONFIG_PROVENANCE is gone on purpose: with trusted publishing npm attaches a
+          # provenance attestation by default, and the flag is no longer needed.

@@ -52,6 +52,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Publishing authenticates through npm Trusted Publishing instead of a long-lived token. Each of
+  the three packages carries a trusted-publisher connection naming this repository and
+  `.github/workflows/release.yml`; npm mints a short-lived credential for the individual job,
+  scoped to that package, which cannot be exported or replayed. The `NPM_TOKEN` it replaced did
+  not exist in this repository or in the organization, and the workflow reported success anyway
+  because `changesets/action` exits clean when it finds no changeset — the first real changeset
+  would have reached the registry with no credential at all. Two things follow that are worth
+  knowing before touching that file: renaming it breaks the trust for all three packages and the
+  publish is rejected, and the job no longer carries an npm credential, so what persists into
+  `.git/config` is GitHub's own token alone. (#20)
 - `CONTRIBUTING.md` lists the gating commands in an order that works. It named four — check,
   typecheck, build, test — which reads as a sequence and is not one: the packages resolve each
   other through their `exports` map into `dist/`, with no `paths` mapping and no `src` fallback,
