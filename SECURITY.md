@@ -16,7 +16,7 @@ package; there are no maintenance branches for older releases.
 **Do not open a public issue for a security problem.**
 
 Report it privately through GitHub's [security advisory
-form](https://github.com/usetheodev/theokit-di/security/advisories/new), or by
+form](https://github.com/usetheokit/theokit-di/security/advisories/new), or by
 email to <admin@usetheo.dev> if you would rather not use GitHub.
 
 What helps most, roughly in order:

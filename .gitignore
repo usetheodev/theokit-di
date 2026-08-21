@@ -5,3 +5,6 @@ coverage/
 .turbo/
 *.tsbuildinfo
 .DS_Store
+
+# Kit de manutencao (Squad) instalado em .claude/ — nao versionado
+.claude/

@@ -76,6 +76,22 @@ interface DialectAwareDb {
   select: () => { from: (table: unknown) => unknown };
 }
 
+/**
+ * CRUD over one Drizzle table, with the six methods most application code needs.
+ *
+ * Resolve one per table with {@link InjectRepository}, or build one directly with
+ * {@link createRepository} when you want no container at all. Anything the six methods do not cover
+ * is what `query()` is for: it hands back the Drizzle builder, so an arbitrary query stays possible
+ * without this class growing a second query language.
+ *
+ * Two guards are deliberate. The constructor refuses a table with no primary key, because every
+ * other method addresses rows by it. And `findById`, `update` and `delete` refuse an id that is
+ * null, empty or not a string or number — a `DELETE` whose `WHERE` never matched anything usable
+ * looks exactly like one that matched every row, and only afterwards.
+ *
+ * When an agent context is active (see {@link withAgentContext}) and the table declares the
+ * matching columns, `insert` and `update` fill them in.
+ */
 export class Repository<T extends Table> {
   private readonly pkColumn: Column;
   private readonly pkName: string;

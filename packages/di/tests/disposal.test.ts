@@ -181,3 +181,98 @@ describe("runInRequest — disposal even on callback throw", () => {
     expect(disposed).toBe(true);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────
+// Who owns the instance decides who disposes it
+// ─────────────────────────────────────────────────────────────────────
+
+describe("Container.dispose() — resource ownership", () => {
+  it("does NOT dispose a value the container was handed rather than built", async () => {
+    let disposed = 0;
+    // The caller built this and still holds the reference, so the caller can — and by every
+    // convention should — close it. A container that closes it too turns an ordinary teardown
+    // into a double close, which is the one failure mode neither side can see coming.
+    const pool = {
+      dispose(): void {
+        disposed += 1;
+      },
+    };
+
+    const container = new Container();
+    container.register({ provide: "POOL", useValue: pool });
+    container.resolve("POOL");
+    await container.dispose();
+
+    expect(disposed).toBe(0);
+  });
+
+  it("disposes what it built from a factory, because nobody else has the reference", async () => {
+    let disposed = 0;
+    const container = new Container();
+    container.register({
+      provide: "BUILT",
+      useFactory: () => ({
+        dispose(): void {
+          disposed += 1;
+        },
+      }),
+    });
+    container.resolve("BUILT");
+    await container.dispose();
+
+    expect(disposed).toBe(1);
+  });
+
+  it("disposes an aliased instance ONCE, however many tokens reach it", async () => {
+    let disposed = 0;
+    const container = new Container();
+    container.register({
+      provide: "REAL",
+      useFactory: () => ({
+        dispose(): void {
+          disposed += 1;
+        },
+      }),
+    });
+    container.register({ provide: "ALIAS", useExisting: "REAL" });
+
+    // `useExisting` is an alias, so both tokens resolve to the SAME object. Disposing it once
+    // per token that named it would close one resource twice.
+    expect(container.resolve("ALIAS")).toBe(container.resolve("REAL"));
+    await container.dispose();
+
+    expect(disposed).toBe(1);
+  });
+
+  it("does not dispose a handed-in value reached through an alias either", async () => {
+    let disposed = 0;
+    const handle = {
+      dispose(): void {
+        disposed += 1;
+      },
+    };
+    const container = new Container();
+    container.register({ provide: "HANDLE", useValue: handle });
+    container.register({ provide: "ALIAS", useExisting: "HANDLE" });
+    container.resolve("ALIAS");
+    await container.dispose();
+
+    expect(disposed).toBe(0);
+  });
+
+  it("leaves a REQUEST-scoped handed-in value alone when the request ends", async () => {
+    let disposed = 0;
+    const handle = {
+      dispose(): void {
+        disposed += 1;
+      },
+    };
+    const container = new Container();
+    container.register({ provide: "H", useValue: handle, scope: Scope.REQUEST });
+    await container.runInRequest(async () => {
+      container.resolve("H");
+    });
+
+    expect(disposed).toBe(0);
+  });
+});
