@@ -13,8 +13,25 @@ pnpm build
 pnpm test
 ```
 
-`pnpm validate` is not a script here; the four commands that gate a change are
-`pnpm check`, `pnpm typecheck`, `pnpm build` and `pnpm test`. All four must pass.
+`pnpm validate` is not a script here. Five commands gate a change, and the order below is
+not a preference — it is the only one that works from a clean checkout:
+
+```bash
+pnpm check        # Biome: lint + format. Needs nothing built, so it fails first and cheapest.
+pnpm build        # MUST precede the three below.
+pnpm typecheck
+pnpm test
+pnpm quality:docs # documentation gates: orphans, README-vs-API drift, coverage
+```
+
+**Build before typecheck**, however backwards that reads. `@theokit/di` is a `workspace:*`
+dependency of the other two packages and resolves through its `exports` map, which points at
+`dist/` — there is no `paths` mapping and no `src` condition to fall back on. With a stale
+`dist/` on disk the wrong order appears to work, which is exactly why it survived here
+undetected; on a fresh clone `pnpm typecheck` fails outright.
+
+The last two read the emitted declarations for the same reason: a docblock in `src/` is not
+documentation until it survives the build.
 
 ## Branches
 

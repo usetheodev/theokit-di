@@ -30,6 +30,14 @@ function entityArrayOrThrow(entities: unknown): readonly unknown[] {
   return entities;
 }
 
+/**
+ * Provider builders that put a data source and its repositories into a container.
+ *
+ * Two calls, in this order: `forRoot` once per database, `forFeature` once per group of tables. The
+ * split is what lets a feature module declare the tables it needs without repeating the connection
+ * settings, and `forFeature` refuses outright when `forRoot` has not run for its data source —
+ * otherwise the failure would surface as a missing token at the first query, far from its cause.
+ */
 export const OrmModule = {
   forRoot<TSchema extends Record<string, AnyTable>>(opts: OrmRootOptions<TSchema>): Provider[] {
     if (opts === null || typeof opts !== "object") {

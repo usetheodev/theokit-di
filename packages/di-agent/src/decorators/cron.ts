@@ -1,11 +1,16 @@
 import "reflect-metadata";
 import { METADATA_KEYS } from "@theokit/di";
 
+/** What {@link Cron} declares: the `schedule` as a cron expression and the `timezone` it is read
+ *  in. The expression is stored verbatim and never parsed here, so a malformed one surfaces
+ *  wherever it is eventually scheduled. */
 export interface CronOptions {
   schedule: string;
   timezone?: string;
 }
 
+/** A stored `@Cron`, with the method it was applied to. The map is already keyed by that method;
+ *  `methodKey` repeats it so an entry read on its own still says what it schedules. */
 export interface CronMetadata extends CronOptions {
   methodKey: string | symbol;
 }

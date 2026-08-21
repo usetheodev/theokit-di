@@ -2,11 +2,15 @@ import "reflect-metadata";
 
 import { METADATA_KEYS } from "@theokit/di";
 
+/** What {@link Hitl} declares: the `tools` whose invocation needs a human decision, and the
+ *  `timeoutMs` after which waiting stops. */
 export interface HitlOptions {
   tools: string[];
   timeoutMs?: number;
 }
 
+/** A stored `@Hitl`, with the method it was applied to. The map is already keyed by that method;
+ *  `methodKey` repeats it so an entry read on its own still says what it guards. */
 export interface HitlMetadata extends HitlOptions {
   methodKey: string | symbol;
 }

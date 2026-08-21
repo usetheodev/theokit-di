@@ -101,6 +101,20 @@ interface Registration<T = unknown> {
    * derive edges.
    */
   readonly aliasTarget?: Token;
+  /**
+   * Whether the container CONSTRUCTED what this registration resolves to, and therefore owns
+   * tearing it down.
+   *
+   * True for a class and for a factory: the container ran the code that produced the instance, and
+   * in the ordinary case nobody else holds a reference, so nobody else can close it.
+   *
+   * False for a value and for an alias, for two different reasons. A `useValue` was built by the
+   * caller, who still holds it — disposing it here would close, on the caller's behalf, a resource
+   * the caller is also entitled to close, and a double close is a failure neither side can see
+   * coming. An alias resolves to an instance ANOTHER registration already tracks, so tracking it
+   * again would dispose one object once per token that names it.
+   */
+  readonly containerOwned: boolean;
 }
 
 /**
@@ -410,6 +424,7 @@ export class Container {
       scope,
       factory: (ctx) => this.constructClassWithAsyncFallback(target, ctx),
       classTarget: target,
+      containerOwned: true,
     };
   }
 
@@ -431,6 +446,7 @@ export class Container {
         );
       },
       injectTokens,
+      containerOwned: true,
     };
   }
 
@@ -463,6 +479,7 @@ export class Container {
       token: provider.provide,
       scope: Scope.SINGLETON,
       factory: () => provider.useValue,
+      containerOwned: false,
     };
   }
 
@@ -472,6 +489,7 @@ export class Container {
       scope: Scope.SINGLETON,
       factory: (ctx) => ctx.resolve(provider.useExisting) as T,
       aliasTarget: provider.useExisting,
+      containerOwned: false,
     };
   }
 
@@ -670,7 +688,7 @@ export class Container {
       value.then(
         (resolved) => {
           this.storeInCache(token, resolved, registration.scope);
-          this.trackInstance(resolved, registration.scope);
+          this.trackInstance(resolved, registration);
         },
         () => {
           this.deleteFromCache(token, registration.scope);
@@ -680,7 +698,7 @@ export class Container {
     }
 
     this.storeInCache(token, value, registration.scope);
-    this.trackInstance(value, registration.scope);
+    this.trackInstance(value, registration);
     return value as T;
   }
 
@@ -721,7 +739,7 @@ export class Container {
       result.then(
         (value) => {
           this.storeInCache(token, value, registration.scope);
-          this.trackInstance(value, registration.scope);
+          this.trackInstance(value, registration);
         },
         () => {
           this.deleteFromCache(token, registration.scope);
@@ -730,7 +748,7 @@ export class Container {
       return result as Promise<T>;
     }
     this.storeInCache(token, result, registration.scope);
-    this.trackInstance(result, registration.scope);
+    this.trackInstance(result, registration);
     return result as T;
   }
 
@@ -771,9 +789,17 @@ export class Container {
     }
   }
 
-  private trackInstance(value: unknown, scope: Scope): void {
-    // A class whose only teardown is `@PreDestroy` has no `dispose()`, so tracking on
-    // `isDisposable` alone would silently skip it — the bug behind #5.
+  /**
+   * Record an instance for teardown, when this container is the one that should tear it down.
+   *
+   * Two questions, in this order. Does the container OWN it — see `containerOwned`; a value the
+   * caller handed in and an instance reached through an alias are both refused here. And does it
+   * have any teardown at all: a class whose only teardown is `@PreDestroy` has no `dispose()`, so
+   * testing `isDisposable` alone would silently skip it.
+   */
+  private trackInstance(value: unknown, registration: Registration): void {
+    if (!registration.containerOwned) return;
+    const { scope } = registration;
     if (!isDisposable(value) && !hasPreDestroy(value)) return;
     if (scope === Scope.SINGLETON) {
       this.singletonInstances.push(value);

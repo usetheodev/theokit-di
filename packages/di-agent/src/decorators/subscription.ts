@@ -1,11 +1,19 @@
 import "reflect-metadata";
 import { METADATA_KEYS } from "@theokit/di";
 
+/** What {@link Subscription} declares: the event `name` to listen for, and optionally the
+ *  `transport` it arrives on. */
 export interface SubscriptionOptions {
   name: string;
   transport?: string;
 }
 
+/**
+ * Declare a property as a subscription to an event stream.
+ *
+ * Records metadata only. Nothing in this package acts on it — the runtime that does lives in
+ * `@theokit/sdk`, which is what lets the declaration and the execution version independently.
+ */
 export function Subscription(options: SubscriptionOptions): PropertyDecorator {
   return (target: object, propertyKey: string | symbol) => {
     const existing: Map<string | symbol, SubscriptionOptions> =
@@ -15,6 +23,7 @@ export function Subscription(options: SubscriptionOptions): PropertyDecorator {
   };
 }
 
+/** Every `@Subscription` on a class, keyed by the property it was applied to. */
 export function readSubscriptionMetadata(
   target: abstract new (...args: never) => unknown,
 ): ReadonlyMap<string | symbol, SubscriptionOptions> {

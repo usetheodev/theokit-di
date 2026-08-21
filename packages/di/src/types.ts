@@ -45,12 +45,32 @@ export type Provider<T = unknown> =
   | ValueProvider<T>
   | ExistingProvider<T>;
 
+/**
+ * Bind a token to a class the container constructs, resolving its constructor parameters.
+ *
+ * The common case, and the one the bare-class shorthand expands to: passing `MyService` in
+ * `providers` is the same as `{ provide: MyService, useClass: MyService }`.
+ *
+ * The container built it, so the container tears it down: `dispose()` and `@PreDestroy` both run
+ * on `container.dispose()`, in reverse construction order.
+ */
 export interface ClassProvider<T = unknown> {
   provide: Token<T>;
   useClass: ClassConstructor<T>;
   scope?: Scope;
 }
 
+/**
+ * Bind a token to whatever a function returns, with its dependencies listed in `inject`.
+ *
+ * Use it when construction needs more than `new`: a value read from configuration, a handle built
+ * by a library, or anything async — a factory may return a Promise, and the token then resolves
+ * only through `resolveAsync`. Calling `resolve()` on such a token throws
+ * `AsyncProviderInSyncResolveError` rather than handing back the Promise.
+ *
+ * The container ran the factory, so it tears down what came out — unlike a `useValue`, which it
+ * was merely handed.
+ */
 export interface FactoryProvider<T = unknown> {
   provide: Token<T>;
   // biome-ignore lint/suspicious/noExplicitAny: factory deps are dynamic by definition
@@ -59,11 +79,32 @@ export interface FactoryProvider<T = unknown> {
   scope?: Scope;
 }
 
+/**
+ * Bind a token to a value that already exists.
+ *
+ * The container stores it as given and constructs nothing, so it does not tear it down either:
+ * `container.dispose()` leaves a `useValue` alone even when it has a `dispose()` method. You
+ * built it and you still hold the reference, so closing it is yours — and a container that closed
+ * it too would make an ordinary teardown a double close, which neither side can see coming.
+ *
+ * The rule is ownership, and it is the same one that decides the other three: the container tears
+ * down what it constructed, because in that case nobody else has the reference.
+ */
 export interface ValueProvider<T = unknown> {
   provide: Token<T>;
   useValue: T;
 }
 
+/**
+ * Bind a token as an alias for another token.
+ *
+ * Both names resolve to the same instance rather than to two of it, which is what makes an alias
+ * different from registering the same class twice.
+ *
+ * Disposal follows from that: the instance is torn down once, by the registration that built it,
+ * however many aliases point at it. Counting the alias separately would close one resource once
+ * per name it answers to.
+ */
 export interface ExistingProvider<T = unknown> {
   provide: Token<T>;
   useExisting: Token<T>;

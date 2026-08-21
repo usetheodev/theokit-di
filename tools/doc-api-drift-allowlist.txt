@@ -1,0 +1,21 @@
+# Documented names that do not exist, deferred with a mandatory sunset.
+#
+# It lives under `tools/`, beside the gate that reads it and inside the tree CI checks out. An
+# allowlist CI could not read would make the gate behave one way locally and another on a pull
+# request, which is worse than either verdict on its own.
+#
+# Format (one entry per line):
+#   SPECIFIER | NAME | SUNSET (YYYY-MM-DD) | RATIONALE
+#
+# Keyed by specifier+name, NOT by file:line. The defect is "this module does not export this name",
+# and it is one defect however many documents repeat it. A line number would also drift every time
+# someone edits a README above the example, silently re-arming or mis-aiming the entry.
+#
+# An entry whose SUNSET has passed is IGNORED and the finding re-fires at full severity — the run
+# says so explicitly. A malformed entry aborts the run (exit 2) rather than being skipped: an
+# exemption nobody can parse must not read as an exemption nobody needed.
+#
+# An allowlisted finding is NOT hidden. It is printed under "deferred" with its sunset date on every
+# run, so it stays a dated debt rather than becoming invisible.
+#
+# Adding an entry REQUIRES a CHANGELOG entry under `[Unreleased]`.
