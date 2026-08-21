@@ -61,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   The same npm release breaks the path a second time, silently: `npm info --json` returns an array
   where earlier versions returned an object, so the list of already-published versions that
   changesets reads comes back empty and every package looks unpublished. The rejected flag stopped
-  that run before it reached the registry; nothing guarantees that ordering next time. (#20)
+  that run before it reached the registry; nothing guarantees that ordering next time. (#32)
 - Publishing authenticates through npm Trusted Publishing instead of a long-lived token. Each of
   the three packages carries a trusted-publisher connection naming this repository and
   `.github/workflows/release.yml`; npm mints a short-lived credential for the individual job,
