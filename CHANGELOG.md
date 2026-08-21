@@ -52,6 +52,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- The release workflow installs npm `11.9.0` instead of `12.0.2`. changesets detects pnpm and
+  appends `--no-git-checks` to the publish command; that flag reaches npm, and npm 12 rejects
+  unknown configuration with `EUNKNOWNCONFIG` where every earlier npm ignored it, so all three
+  packages failed to publish. Measured on each version against the same package: 11.5.1 accepts,
+  11.9.0 accepts, 12.0.2 rejects. Trusted publishing still requires 11.5.1 or newer, which makes
+  11.9.0 the newest npm satisfying both. (#20)
 - Publishing authenticates through npm Trusted Publishing instead of a long-lived token. Each of
   the three packages carries a trusted-publisher connection naming this repository and
   `.github/workflows/release.yml`; npm mints a short-lived credential for the individual job,
