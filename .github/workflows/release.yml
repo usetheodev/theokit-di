@@ -19,6 +19,9 @@ on:
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
+permissions:
+  contents: read
+
 jobs:
   release:
     name: Release via Changesets (theokit-di)
@@ -39,8 +42,12 @@ jobs:
       # the sharpest edge: `v1` is not a tag in that repository, it is a BRANCH — any push to it
       # changed the code running here, with no release and no version bump to notice. Each pin
       # carries the version it resolved to on 2026-08-21, verified against the action's own tags.
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1 # zizmor: ignore[artipacked]
         with:
+          # The one checkout in this repository that keeps its credential, and not
+          # by oversight: changesets/action pushes the version commit and the
+          # release tags with the git CLI, which authenticates from exactly this
+          # persisted token. `persist-credentials: false` breaks the release.
           # changesets reads tags to decide what is unpublished; a shallow clone hides them.
           fetch-depth: 0
 
